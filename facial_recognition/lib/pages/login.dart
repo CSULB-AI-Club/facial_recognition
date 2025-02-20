@@ -60,15 +60,53 @@ class LogIn extends StatelessWidget {
                 )
               )
             ),
-            SizedBox(height: 20),
-            Container(
-              height: 60,
-              width: 200,
-              child: Center(),
-              decoration: BoxDecoration(
-                  color: Color(0xff9F1FFF),
-                  borderRadius: BorderRadius.circular(10)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(width: 25),
+                GestureDetector(
+                  onTap:() => print("Forgot Password"),
+                  child: 
+                    Text("Forgot your password?", style: TextStyle(
+                    color: Color(0xff9F1FFF),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    
+                  ))
                 ),
+              ],
+            ),
+            SizedBox(height: 50),
+            GestureDetector(
+              onTap: () => print("Log In"),
+              child: Container(
+                height: 60,
+                width: 200,
+                decoration: BoxDecoration(
+                    color: Color(0xff9F1FFF),
+                    border: Border.all(
+                      color: Color.fromARGB(255, 192, 113, 253),
+                      width: 5
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                child: Center(
+                  child: Text("Log In", style: TextStyle(
+                    color: Colors.white, 
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold
+                    ))
+                ),
+              ),
+            ),
+            SizedBox(height: 5),
+            GestureDetector(
+              onTap:() => print("Wants to make Account"),
+              child: Text("Create an Account", style: TextStyle(
+                color: Color(0xff9F1FFF),
+                fontSize: 15,
+                fontWeight: FontWeight.bold
+              ))
             )
           ],
         )
