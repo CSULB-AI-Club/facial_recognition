@@ -60,6 +60,7 @@ class LogIn extends StatelessWidget {
                 )
               )
             ),
+            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
