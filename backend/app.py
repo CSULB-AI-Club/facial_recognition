@@ -24,8 +24,8 @@ def create_user():
     # Store user in Firestore
         db.collection("users").document(user_id).set({
             "user_id": user_id,
-            "password": password,
             "email": email,
+            "password": password
         })
     return jsonify({"message": "User created successfully", "user_id": user_id})
 

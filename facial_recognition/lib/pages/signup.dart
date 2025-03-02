@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:facial_recognition/pages/login.dart';
 
 class SignUp extends StatefulWidget {
   @override
