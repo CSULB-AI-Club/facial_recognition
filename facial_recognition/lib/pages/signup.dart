@@ -1,9 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class SignUp extends StatefulWidget {
+  const SignUp({super.key});
+
   @override
   State<SignUp> createState() => _SigninState();
 }
@@ -23,23 +24,14 @@ class _SigninState extends State<SignUp> {
     }
     else {
       try {
-        final response = await http.post(
-          Uri.parse('http://127.0.0.1:5000/create_user'),
-          headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, String>{
-          'email': email,
-          'password': password
-        }),
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password
         );
-        if (response.statusCode == 200) {
-          print("Registration Successful");
-          Navigator.pushNamed(context, '/home');
-        }
-        else {
-          print("Registration Failed");
-        }
+        print("Sign Up Successful: ${userCredential.user}");
+        await userCredential.user?.sendEmailVerification();
+        print("Registration Successful. Verification Email Sent.");
+        Navigator.pushNamed(context, '/home');
       } 
       catch (e) {
         print("Error: $e");

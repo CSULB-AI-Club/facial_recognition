@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:facial_recognition/pages/signup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -17,28 +17,22 @@ class _LogInState extends State<LogIn> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
     try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      User? user = FirebaseAuth.instance.currentUser;
 
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/authenticate'), //sends to the backend
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(<String, String>{
-          'email': email,
-          'password': password
-        }),
-        
-      );
-      if (response.statusCode == 200) {
-        print("Login Successful");
-        Navigator.pushNamed(context, '/home');
-      }
-      else {
-        print("Login Failed");
+      if(user != null){
+        if(!user.emailVerified){
+          print("Email not verified");
+        }
+        else{
+          print("Email Verified");
+          print("Login Successful");
+          Navigator.pushNamed(context, '/home');
+        }
       }
     }
-    catch (e) {
-      print("Error: $e");
+    on FirebaseAuthException catch (e) {
+      print("Error: ${e.message}");
     }
   }
 
