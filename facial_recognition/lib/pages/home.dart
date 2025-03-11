@@ -1,4 +1,4 @@
-import 'package:facial_recognition/pages/add_ticket.dart';
+//import 'package:facial_recognition/pages/add_ticket.dart';
 import 'package:facial_recognition/pages/camera.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:facial_recognition/pages/settings.dart';
@@ -121,19 +121,20 @@ class HomePage extends StatelessWidget{
         actions: [
         PopupMenuButton<int>(
         onSelected: (value){
+        //  if (value == 1){
+            //Navigator.of(context).push(
+              //MaterialPageRoute(
+              //builder: (context) => const AddTicket()),
+          //  );
+          //}
           if (value == 1){
             Navigator.of(context).push(
               MaterialPageRoute(
-              builder: (context) => const AddTicket()),
+              //builder: (context) => const Settings()),
+              builder: (context) =>  Settings()),
             );
           }
           if (value == 2){
-            Navigator.of(context).push(
-              MaterialPageRoute(
-              builder: (context) => const Settings()),
-            );
-          }
-          if (value == 3){
               Navigator.of(context).push(
               MaterialPageRoute(
               builder: (context) => LogIn()),
@@ -141,22 +142,22 @@ class HomePage extends StatelessWidget{
           }
         },
         itemBuilder: (context)=>[
+        //  PopupMenuItem(
+        //    value: 1,
+        //    child: ListTile(
+        //      leading: SvgPicture.asset('assets/icons/add.svg', height: 24, width: 24),
+        //      title: Text('Add Ticket/Pass'),
+        //    ),
+        //  ),
           PopupMenuItem(
             value: 1,
-            child: ListTile(
-              leading: SvgPicture.asset('assets/icons/add.svg', height: 24, width: 24),
-              title: Text('Add Ticket/Pass'),
-            ),
-          ),
-          PopupMenuItem(
-            value: 2,
             child: ListTile(
               leading: SvgPicture.asset('assets/icons/settings.svg', height: 24, width: 24),
               title: Text('Settings'),
             ),
           ),
           PopupMenuItem(
-            value: 3,
+            value: 2,
             child: ListTile(
               leading: SvgPicture.asset('assets/icons/logout.svg', height:24, width: 24) ,
               title: Text('Log out'),

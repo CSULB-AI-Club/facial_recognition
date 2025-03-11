@@ -1,9 +1,7 @@
-import 'package:facial_recognition/pages/insitution_page.dart';
-import 'package:facial_recognition/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class Settings extends StatelessWidget {
+class InsitutionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double myWidth = MediaQuery.sizeOf(context).width;
@@ -11,8 +9,8 @@ class Settings extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
-        centerTitle: false,
+        title: Text('Connections'),
+        centerTitle: true,
       ),
       body: Container(
         height: myHeight,
@@ -26,13 +24,26 @@ class Settings extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: EdgeInsets.only(top: 20, left: 15),
+              child: Text(
+                'Connected Institutions',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             SizedBox(height: myHeight * 0.02),
             Column(
               children: [
-                settingOption('Profile', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
-                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
-                settingOption('Connect to Insitution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
-                settingOption('Log Out', Icons.exit_to_app, context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
+                connectionOption('CSULB', 'assets/icons/CSULB.svg', context),
+                connectionOption('Fandango', 'assets/icons/fandango.svg', context),
+                connectionOption('Disneyland', 'assets/icons/DisneyLand.svg', context),
+                connectionOption('TicketMaster', 'assets/icons/ticketmaster.svg', context),
+                connectionOption('Add New Institution', 'assets/icons/add_institution.svg', context, isAddNew: true),
               ],
             ),
           ],
@@ -41,27 +52,29 @@ class Settings extends StatelessWidget {
     );
   }
 
-  Widget settingOption(String title, IconData icon, BuildContext context, VoidCallback onPressed, {bool isLogout = false}) {
+  Widget connectionOption(String title, String assetPath, BuildContext context, {bool isAddNew = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: SizedBox(
         width: MediaQuery.sizeOf(context).width * 0.95,
         height: 60,
         child: ElevatedButton(
-          onPressed: onPressed,
+          onPressed: () {
+            // Add navigation or functionality here
+          },
           style: ElevatedButton.styleFrom(
-            backgroundColor: isLogout ? Colors.red : Colors.white,
+            backgroundColor: isAddNew ? Colors.green : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(icon, color: isLogout ? Colors.white : Colors.black),
+              SvgPicture.asset(assetPath, height: 24, width: 24, color: isAddNew ? Colors.white : Colors.black),
               SizedBox(width: 15),
               Text(
                 title,
                 style: TextStyle(
-                  color: isLogout ? Colors.white : Colors.black,
+                  color: isAddNew ? Colors.white : Colors.black,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

@@ -1,6 +1,6 @@
 import 'package:facial_recognition/pages/forget_password.dart';
 import 'package:facial_recognition/pages/home.dart';
-import 'package:facial_recognition/pages/new_account.dart';
+import 'package:facial_recognition/pages/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 class LogIn extends StatelessWidget {
@@ -117,7 +117,7 @@ class LogIn extends StatelessWidget {
             GestureDetector(
               onTap:() {
                 Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => NewAccount()));
+                MaterialPageRoute(builder: (context) => SignUp()));
               },
               child: Text("Create an Account", style: TextStyle(
                 color: Color(0xff9F1FFF),
