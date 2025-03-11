@@ -13,14 +13,54 @@ class _SigninState extends State<SignUp> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmController = TextEditingController();
-
+  final TextEditingController firstnameController = TextEditingController();
+  final TextEditingController lastnameController = TextEditingController();
+  String passwordError = '';
+  String emailError = '';
+  String confirmError = '';
+  String firstNameError = '';
+  String lastNameError = '';
   Future<void> signUp() async {
+    String firstname = firstnameController.text.trim();
+    String lastname = lastnameController.text.trim();
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
     String confirm = confirmController.text.trim();
+    setState(() {
+      emailError = '';
+      passwordError = '';
+      confirmError = '';
+      firstNameError = '';
+      lastNameError = '';
+    });
+    if(email.isEmpty){
+      setState(() {
+        emailError = 'Please enter an email';
+      });
+    }
+    if(password.isEmpty){
+      setState(() {
+        passwordError = 'Please enter a password';
+      });
+    }
     if (password != confirm) {
-      print("Passwords do not match");
+      setState(() {
+        confirmError = 'Passwords do not match';
+        passwordError = 'Passwords do not match';
+      });
       return;
+    }
+    if (firstname.isEmpty){
+      print('firstname empty');
+      setState(() {
+        firstNameError = 'Enter a first name';
+      });
+    }
+    if(lastname.isEmpty){
+      print('lastname is empty');
+      setState(() {
+        lastNameError = 'Enter a last name';
+      });
     }
     else {
       try {
@@ -33,8 +73,13 @@ class _SigninState extends State<SignUp> {
         print("Registration Successful. Verification Email Sent.");
         Navigator.pushNamed(context, '/home');
       } 
-      catch (e) {
-        print("Error: $e");
+      on FirebaseAuthException catch (e) {
+        print("Error: ${e.code}");
+        if(e.code == 'email-already-in-use'){
+          setState(() {
+            emailError = 'Email is already in use.';
+          });
+        }
       }
     }
   }
@@ -56,7 +101,45 @@ class _SigninState extends State<SignUp> {
               fontWeight: FontWeight.bold,
               ),),
             Padding(
-              padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
+              padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+              //FIRST NAME TEXTFIELD
+              child: TextField(
+                controller: firstnameController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'First Name',
+                  hintText: 'Enter First Name',
+                  labelStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
+                  hintStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
+                ),
+              ),
+            ),
+            if(firstNameError.isNotEmpty)
+              Text(
+                firstNameError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            Padding(
+              padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+              //LAST NAME TEXTFIELD
+              child: TextField(
+                controller: lastnameController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Last Name',
+                  hintText: 'Enter Last Name',
+                  labelStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
+                  hintStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
+                ),
+              ),
+            ),
+            if(lastNameError.isNotEmpty)
+              Text(
+                lastNameError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            Padding(
+              padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 5),
               //EMAIL TEXTFIELD
               child: TextField(
                 controller: emailController,
@@ -75,9 +158,14 @@ class _SigninState extends State<SignUp> {
                 ),
               ),
             ),
+            if(emailError.isNotEmpty)
+              Text(
+                emailError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
             Padding(
               //PASSWORD TEXTFIELD
-              padding: EdgeInsets.only(top:10, left:20, right:20, bottom: 10),
+              padding: EdgeInsets.only(top:10, left:20, right:20, bottom: 5),
               child: TextField(
                 controller: passwordController,
                 obscureText: true,
@@ -96,9 +184,14 @@ class _SigninState extends State<SignUp> {
                 ),
               )
             ),
+            if(passwordError.isNotEmpty)
+              Text(
+                passwordError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
             Padding(
               //CONFIRM PASSWORD TEXTFIELD
-              padding: EdgeInsets.only(top:10, left:20, right:20, bottom:10),
+              padding: EdgeInsets.only(top:10, left:20, right:20, bottom: 5),
               child: TextField(
                 controller: confirmController,
                 obscureText: true,
@@ -117,6 +210,11 @@ class _SigninState extends State<SignUp> {
                 ),
               )
             ),
+            if(confirmError.isNotEmpty)
+              Text(
+                confirmError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
             SizedBox(height: 20),
             GestureDetector(
               onTap: () => signUp(),

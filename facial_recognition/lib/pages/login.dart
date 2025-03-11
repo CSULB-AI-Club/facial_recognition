@@ -13,16 +13,38 @@ class LogIn extends StatefulWidget {
 class _LogInState extends State<LogIn> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  String emailError = '';
+  String passwordError = '';
   Future<void> signIn() async{
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
+    setState(() {
+      emailError = '';
+      passwordError = '';
+    });
+
+    if(email.isEmpty){
+      setState(() {
+        emailError = 'Please enter an email';
+      });
+    }
+    if(password.isEmpty){
+      setState(() {
+        passwordError = 'Please enter a password';
+      });
+    }
+
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
       User? user = FirebaseAuth.instance.currentUser;
 
       if(user != null){
         if(!user.emailVerified){
           print("Email not verified");
+          await userCredential.user?.sendEmailVerification();
+          setState(() {
+            emailError = 'Email not verified. Verification email sent.';
+          });
         }
         else{
           print("Email Verified");
@@ -32,7 +54,14 @@ class _LogInState extends State<LogIn> {
       }
     }
     on FirebaseAuthException catch (e) {
-      print("Error: ${e.message}");
+      print("Error: ${e.code}");
+      if(e.code == 'user-not-found' || e.code == 'invalid-credential' || e.code == 'invalid-email'){
+        print("Email or password is invalid");
+        setState(() {
+          emailError = 'email or password is invalid';
+          passwordError = 'email or password is invalid';
+        });
+      }
     }
   }
 
@@ -56,7 +85,7 @@ class _LogInState extends State<LogIn> {
               fontSize: 30,
               fontWeight: FontWeight.normal),),
             Padding(
-              padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
+              padding: EdgeInsets.only(top: 20, left: 20, right: 20),
               //EMAIL TEXTFIELD
               child: TextField(
                 controller: emailController,
@@ -76,6 +105,12 @@ class _LogInState extends State<LogIn> {
                 )
               )
             ),
+            if(emailError.isNotEmpty)
+              SizedBox(height: 5),
+              Text(
+                emailError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
             Padding(
               //PASSWORD TEXTFIELD
               padding: EdgeInsets.only(top: 10, left: 20, right: 20),
@@ -98,6 +133,12 @@ class _LogInState extends State<LogIn> {
                 )
               )
             ),
+            if(passwordError.isNotEmpty)
+              SizedBox(height: 5),
+              Text(
+                passwordError,
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
             SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
