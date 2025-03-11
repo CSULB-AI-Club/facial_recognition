@@ -1,3 +1,6 @@
+import 'package:facial_recognition/pages/forget_password.dart';
+import 'package:facial_recognition/pages/home.dart';
+import 'package:facial_recognition/pages/new_account.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 class LogIn extends StatelessWidget {
@@ -66,7 +69,12 @@ class LogIn extends StatelessWidget {
               children: [
                 SizedBox(width: 25),
                 GestureDetector(
-                  onTap:() => print("Forgot Password"),
+                onTap: () {
+                Navigator.push(context, 
+                MaterialPageRoute(builder: (context) => ForgotPassword()));
+                
+              } ,
+                  //print("Forgot Password"),
                   child: 
                     Text("Forgot your password?", style: TextStyle(
                     color: Color(0xff9F1FFF),
@@ -79,7 +87,12 @@ class LogIn extends StatelessWidget {
             ),
             SizedBox(height: 50),
             GestureDetector(
-              onTap: () => print("Log In"),
+              onTap: () {
+                Navigator.push(context, 
+                MaterialPageRoute(builder: (context) => HomePage()));
+                
+              } ,
+              //print("Log In"),
               child: Container(
                 height: 60,
                 width: 200,
@@ -102,7 +115,10 @@ class LogIn extends StatelessWidget {
             ),
             SizedBox(height: 5),
             GestureDetector(
-              onTap:() => print("Wants to make Account"),
+              onTap:() {
+                Navigator.push(context, 
+                MaterialPageRoute(builder: (context) => NewAccount()));
+              },
               child: Text("Create an Account", style: TextStyle(
                 color: Color(0xff9F1FFF),
                 fontSize: 15,
