@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:facial_recognition/pages/email_verify.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -71,7 +72,7 @@ class _SigninState extends State<SignUp> {
         print("Sign Up Successful: ${userCredential.user}");
         await userCredential.user?.sendEmailVerification();
         print("Registration Successful. Verification Email Sent.");
-        Navigator.pushNamed(context, '/home');
+        Navigator.push(context, MaterialPageRoute(builder: (context) => EmailVerify(email: email, password: password)));
       } 
       on FirebaseAuthException catch (e) {
         print("Error: ${e.code}");

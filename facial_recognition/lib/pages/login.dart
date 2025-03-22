@@ -39,18 +39,8 @@ class _LogInState extends State<LogIn> {
       User? user = FirebaseAuth.instance.currentUser;
 
       if(user != null){
-        if(!user.emailVerified){
-          print("Email not verified");
-          await userCredential.user?.sendEmailVerification();
-          setState(() {
-            emailError = 'Email not verified. Verification email sent.';
-          });
-        }
-        else{
-          print("Email Verified");
-          print("Login Successful");
-          Navigator.pushNamed(context, '/home');
-        }
+        print("Login Successful");
+        Navigator.pushNamed(context, '/home');
       }
     }
     on FirebaseAuthException catch (e) {
@@ -80,7 +70,7 @@ class _LogInState extends State<LogIn> {
               fontSize: 60,
               fontWeight: FontWeight.bold,
               height: 0.9),),
-            Text("2FACE", style: TextStyle(
+            Text("BLINKEY", style: TextStyle(
               color: Colors.black,
               fontSize: 30,
               fontWeight: FontWeight.normal),),

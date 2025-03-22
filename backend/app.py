@@ -2,9 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from firebase_config import db  # Ensure you have firebase_config.py set up with Firestore
 import uuid  # To generate a unique user ID
-
+import os
 app = Flask(__name__)
 CORS(app)
+
+
+
 
 @app.route("/create_user", methods=["POST"])
 def create_user():
@@ -46,10 +49,27 @@ def authenticate():
         return jsonify({"message": "User authenticated successfully"}), 200
 
 
+@app.route("/upload", methods=["POST"])
+def upload():
+    print("Receiving file...")
+    if 'image' not in request.files:
+        return jsonify({"error": "File is required"}), 400
+    
+    file = request.files['image']
+
+    if file.filename == '':
+        return jsonify({"error": "File is required"}), 400
+    
+    #save file to the upload folder
+    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename)
+    file.save(file_path)
+
+    return jsonify({"message": "File uploaded successfully"}), 200
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
 
 
 
