@@ -6,7 +6,9 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class FaceSetup  extends StatefulWidget{
-  const FaceSetup({super.key});
+  final String email;
+  final String password;
+  const FaceSetup({super.key, required this.email, required this.password});
 
 
   @override
@@ -41,8 +43,8 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
     for (int i = 0; i < count; i++) {
       try {
         XFile picture = await cameraController!.takePicture();
-        File picture_File = File(picture.path);
-        await _uploadImages(File(picture_File.path));
+        File pictureFile = File(picture.path);
+        await _uploadImages(File(pictureFile.path), 'keithnatakusuma@yahoo.com', 'richard2005', i);
         print("Burst Photo $i Saved: ${picture.path}");
       } catch (e) {
         print("Error in burst capture: $e");
@@ -54,15 +56,18 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
     Navigator.pushNamed(context, '/home');
   }
 
-  Future<void> _uploadImages(File imageFile) async {
+  Future<void> _uploadImages(File imageFile, String email, String password, int numEmbeddings) async {
     try {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.0.163:5001/upload'),
+      Uri.parse('http://192.168.0.124:5001/upload'),
     );
 
     request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
+    request.fields['email'] = email;
+    request.fields['password'] =  password;
+    request.fields['num_embeddings'] = numEmbeddings.toString();
     var response = await request.send();
 
     if (response.statusCode == 200) {
@@ -124,7 +129,7 @@ Widget _buildUI(){
             child: Container(),
           ),
             IconButton(
-            onPressed: _isCapturingBurst ? null : () => _captureBurstPhotos(3, 100),
+            onPressed: _isCapturingBurst ? null : () => _captureBurstPhotos(3, 10),
             iconSize: 90,
             icon: const Icon(
             Icons.camera,
@@ -145,9 +150,6 @@ Widget _buildUI(){
       
         ],
       ),
-
-
-        
       ],
     ),
   ),
