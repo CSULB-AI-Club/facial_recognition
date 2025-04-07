@@ -1,3 +1,4 @@
+import 'package:facial_recognition/pages/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:facial_recognition/pages/login.dart';
 //import 'package:firebase_core/firebase_core.dart';
@@ -18,7 +19,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
+<<<<<<< Updated upstream
       home: LogIn()
+=======
+      //home: BlinkeyLogo(),
+      home: BlinkeyReveal(),
+      routes: {
+        '/home': (context) => LogIn(), // Define the login route if needed
+      },
+>>>>>>> Stashed changes
     );
   }
 }

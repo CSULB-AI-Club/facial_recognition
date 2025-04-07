@@ -21,7 +21,11 @@ class LogIn extends StatelessWidget {
               fontSize: 60,
               fontWeight: FontWeight.bold,
               height: 0.9),),
+<<<<<<< Updated upstream
             Text("2FACE", style: TextStyle(
+=======
+            Text("Blinkey", style: TextStyle(
+>>>>>>> Stashed changes
               color: Colors.black,
               fontSize: 30,
               fontWeight: FontWeight.normal),),
