@@ -3,9 +3,20 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
+<<<<<<< Updated upstream
 	<string>your usage description here</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>your usage description here</string>
+=======
+	<string>We use the camera for authentication and profile setup.</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We use the microphone for voice-related features.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We use your photo library to let you upload profile pictures.</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+>>>>>>> Stashed changes
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

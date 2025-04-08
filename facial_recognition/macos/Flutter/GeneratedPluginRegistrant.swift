@@ -5,14 +5,24 @@
 import FlutterMacOS
 import Foundation
 
+import cloud_firestore
+import firebase_auth
 import firebase_core
+<<<<<<< Updated upstream
 import firebase_database
+=======
+>>>>>>> Stashed changes
 import gal
 import rive_common
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  FLTFirebaseFirestorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseFirestorePlugin"))
+  FLTFirebaseAuthPlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseAuthPlugin"))
   FLTFirebaseCorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCorePlugin"))
+<<<<<<< Updated upstream
   FLTFirebaseDatabasePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseDatabasePlugin"))
+=======
+>>>>>>> Stashed changes
   GalPlugin.register(with: registry.registrar(forPlugin: "GalPlugin"))
   RivePlugin.register(with: registry.registrar(forPlugin: "RivePlugin"))
 }
