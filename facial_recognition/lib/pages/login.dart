@@ -1,14 +1,5 @@
-import 'package:facial_recognition/pages/forget_password.dart';
-import 'package:facial_recognition/pages/home.dart';
-import 'package:facial_recognition/pages/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-<<<<<<< Updated upstream
-class LogIn extends StatelessWidget {
-  const LogIn({super.key});
-
-  @override
-=======
 import 'package:facial_recognition/pages/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -65,7 +56,6 @@ class _LogInState extends State<LogIn> {
   }
 
   @override
->>>>>>> Stashed changes
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
@@ -80,30 +70,21 @@ class _LogInState extends State<LogIn> {
               fontSize: 60,
               fontWeight: FontWeight.bold,
               height: 0.9),),
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            Text("2FACE", style: TextStyle(
-=======
-            Text("Blinkey", style: TextStyle(
->>>>>>> Stashed changes
-=======
             Text("BLINKEY", style: TextStyle(
->>>>>>> Stashed changes
               color: Colors.black,
               fontSize: 30,
               fontWeight: FontWeight.normal),),
             Padding(
               padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-<<<<<<< Updated upstream
-=======
               //EMAIL TEXTFIELD
->>>>>>> Stashed changes
               child: TextField(
+                controller: emailController,
                 decoration: InputDecoration(
                   contentPadding: EdgeInsets.all(15),
                   border: OutlineInputBorder(),
                   labelText: 'Email',
                   hintText: 'Enter E-mail',
+                  labelStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
                   hintStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
                   prefixIcon: Padding(
                   padding: const EdgeInsets.all(12),
@@ -114,25 +95,24 @@ class _LogInState extends State<LogIn> {
                 )
               )
             ),
-<<<<<<< Updated upstream
-            SizedBox(height: 10),
-=======
             if(emailError.isNotEmpty)
               SizedBox(height: 5),
               Text(
                 emailError,
                 style: TextStyle(color: Colors.red, fontSize: 12),
               ),
->>>>>>> Stashed changes
             Padding(
-              padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+              //PASSWORD TEXTFIELD
+              padding: EdgeInsets.only(top: 10, left: 20, right: 20),
               child: TextField(
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   contentPadding: EdgeInsets.all(15),
                   border: OutlineInputBorder(),
                   labelText: 'Password',
                   hintText: 'Enter Password',
+                  labelStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
                   hintStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
                   prefixIcon: Padding(
                   padding: const EdgeInsets.all(12),
@@ -155,12 +135,7 @@ class _LogInState extends State<LogIn> {
               children: [
                 SizedBox(width: 25),
                 GestureDetector(
-                onTap: () {
-                Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => ForgotPassword()));
-                
-              } ,
-                  //print("Forgot Password"),
+                  onTap:() => print("Forgot Password"),
                   child: 
                     Text("Forgot your password?", style: TextStyle(
                     color: Color(0xff9F1FFF),
@@ -173,12 +148,7 @@ class _LogInState extends State<LogIn> {
             ),
             SizedBox(height: 50),
             GestureDetector(
-              onTap: () {
-                Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => HomePage()));
-                
-              } ,
-              //print("Log In"),
+              onTap: () => signIn(),
               child: Container(
                 height: 60,
                 width: 200,
@@ -201,10 +171,7 @@ class _LogInState extends State<LogIn> {
             ),
             SizedBox(height: 5),
             GestureDetector(
-              onTap:() {
-                Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => SignUp()));
-              },
+              onTap:() => Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp())),
               child: Text("Create an Account", style: TextStyle(
                 color: Color(0xff9F1FFF),
                 fontSize: 15,

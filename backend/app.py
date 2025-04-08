@@ -17,18 +17,21 @@ def create_user():
         return jsonify({"error": "Email is required"}), 400
 
     email = data["email"]
+    password = data["password"]
+    print(password)
     user_id = str(uuid.uuid4())  # Generate a unique user ID
-
+    email_exists = db.collection("users").where("email", "==", email).get()
+    if email_exists:
+        return jsonify({"error": "Email already exists"}), 400
+    else:
     # Store user in Firestore
-    db.collection("users").document(user_id).set({
-        "user_id": user_id,
-        "email": email
-    })
-
+        db.collection("users").document(user_id).set({
+            "user_id": user_id,
+            "email": email,
+            "password": password
+        })
     return jsonify({"message": "User created successfully", "user_id": user_id})
 
-<<<<<<< Updated upstream
-=======
 
 @app.route("/authenticate", methods=["POST"])
 def authenticate():
@@ -65,7 +68,6 @@ def upload():
 
 
 
->>>>>>> Stashed changes
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
 

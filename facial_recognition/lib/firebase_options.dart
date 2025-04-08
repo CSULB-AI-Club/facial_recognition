@@ -60,11 +60,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyA_F0PEZzhWMRC5_y1b8K0GT7L7Xdv_hrQ',
-    appId: '1:778982725198:ios:6b36152bcf95a75169951f',
+    appId: '1:778982725198:ios:d8578fdb1642139d69951f',
     messagingSenderId: '778982725198',
     projectId: 'faceapp-d1b7b',
     storageBucket: 'faceapp-d1b7b.firebasestorage.app',
-    iosBundleId: 'com.loginpage.facialRecognition',
+    iosBundleId: 'com.example.facialRecognition',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

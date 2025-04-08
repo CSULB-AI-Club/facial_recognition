@@ -1,21 +1,4 @@
 PODS:
-<<<<<<< Updated upstream
-  - camera_avfoundation (0.0.1):
-    - Flutter
-  - Firebase/CoreOnly (11.8.0):
-    - FirebaseCore (~> 11.8.0)
-  - Firebase/Database (11.8.0):
-    - Firebase/CoreOnly
-    - FirebaseDatabase (~> 11.8.0)
-  - firebase_core (3.12.1):
-    - Firebase/CoreOnly (= 11.8.0)
-    - Flutter
-  - firebase_database (11.3.4):
-    - Firebase/Database (= 11.8.0)
-    - firebase_core
-    - Flutter
-  - FirebaseAppCheckInterop (11.9.0)
-=======
   - abseil/algorithm (1.20240116.2):
     - abseil/algorithm/algorithm (= 1.20240116.2)
     - abseil/algorithm/container (= 1.20240116.2)
@@ -1200,7 +1183,6 @@ PODS:
     - GTMSessionFetcher/Core (< 5.0, >= 3.4)
     - RecaptchaInterop (~> 100.0)
   - FirebaseAuthInterop (11.9.0)
->>>>>>> Stashed changes
   - FirebaseCore (11.8.1):
     - FirebaseCoreInternal (~> 11.8.0)
     - GoogleUtilities/Environment (~> 8.0)
@@ -1209,14 +1191,6 @@ PODS:
     - FirebaseCore (~> 11.8.0)
   - FirebaseCoreInternal (11.8.0):
     - "GoogleUtilities/NSData+zlib (~> 8.0)"
-<<<<<<< Updated upstream
-  - FirebaseDatabase (11.8.0):
-    - FirebaseAppCheckInterop (~> 11.0)
-    - FirebaseCore (~> 11.8.0)
-    - FirebaseSharedSwift (~> 11.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
-    - leveldb-library (~> 1.22)
-=======
   - FirebaseFirestore (11.8.0):
     - FirebaseCore (~> 11.8.0)
     - FirebaseCoreExtension (~> 11.8.0)
@@ -1237,20 +1211,16 @@ PODS:
     - gRPC-Core (~> 1.65.0)
     - leveldb-library (~> 1.22)
     - nanopb (~> 3.30910.0)
->>>>>>> Stashed changes
   - FirebaseSharedSwift (11.9.0)
   - Flutter (1.0.0)
   - gal (1.0.0):
     - Flutter
     - FlutterMacOS
-<<<<<<< Updated upstream
-=======
   - GoogleUtilities/AppDelegateSwizzler (8.0.2):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
     - GoogleUtilities/Network
     - GoogleUtilities/Privacy
->>>>>>> Stashed changes
   - GoogleUtilities/Environment (8.0.2):
     - GoogleUtilities/Privacy
   - GoogleUtilities/Logger (8.0.2):
@@ -1264,14 +1234,6 @@ PODS:
   - "GoogleUtilities/NSData+zlib (8.0.2)":
     - GoogleUtilities/Privacy
   - GoogleUtilities/Privacy (8.0.2)
-<<<<<<< Updated upstream
-  - GoogleUtilities/UserDefaults (8.0.2):
-    - GoogleUtilities/Logger
-    - GoogleUtilities/Privacy
-  - leveldb-library (1.22.6)
-<<<<<<< Updated upstream
-=======
-=======
   - GoogleUtilities/Reachability (8.0.2):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
@@ -1367,7 +1329,6 @@ PODS:
   - gRPC-Core/Privacy (1.65.5)
   - GTMSessionFetcher/Core (4.4.0)
   - leveldb-library (1.22.6)
->>>>>>> Stashed changes
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -1376,20 +1337,12 @@ PODS:
   - RecaptchaInterop (100.0.0)
   - rive_common (0.0.1):
     - Flutter
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-
-DEPENDENCIES:
-  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
-=======
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
->>>>>>> Stashed changes
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
-  - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
   - Flutter (from `Flutter`)
   - gal (from `.symlinks/plugins/gal/darwin`)
   - rive_common (from `.symlinks/plugins/rive_common/ios`)
@@ -1400,20 +1353,11 @@ SPEC REPOS:
     - BoringSSL-GRPC
     - Firebase
     - FirebaseAppCheckInterop
-<<<<<<< Updated upstream
-=======
     - FirebaseAuth
     - FirebaseAuthInterop
->>>>>>> Stashed changes
     - FirebaseCore
     - FirebaseCoreExtension
     - FirebaseCoreInternal
-<<<<<<< Updated upstream
-    - FirebaseDatabase
-    - FirebaseSharedSwift
-    - GoogleUtilities
-    - leveldb-library
-=======
     - FirebaseFirestore
     - FirebaseFirestoreInternal
     - FirebaseSharedSwift
@@ -1424,22 +1368,16 @@ SPEC REPOS:
     - leveldb-library
     - nanopb
     - RecaptchaInterop
->>>>>>> Stashed changes
 
 EXTERNAL SOURCES:
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
-<<<<<<< Updated upstream
-=======
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
->>>>>>> Stashed changes
   firebase_core:
     :path: ".symlinks/plugins/firebase_core/ios"
-  firebase_database:
-    :path: ".symlinks/plugins/firebase_database/ios"
   Flutter:
     :path: Flutter
   gal:
@@ -1448,47 +1386,25 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/rive_common/ios"
 
 SPEC CHECKSUMS:
-<<<<<<< Updated upstream
-  camera_avfoundation: 04b44aeb14070126c6529e5ab82cc7c9fca107cf
-=======
   abseil: d121da9ef7e2ff4cab7666e76c5a3e0915ae08c3
   BoringSSL-GRPC: ca6a8e5d04812fce8ffd6437810c2d46f925eaeb
   camera_avfoundation: 04b44aeb14070126c6529e5ab82cc7c9fca107cf
   cloud_firestore: e61acbf808607d2c88ee32b00cd3aec027b38b3c
->>>>>>> Stashed changes
   Firebase: d80354ed7f6df5f9aca55e9eb47cc4b634735eaf
   firebase_auth: 9ebbd83276bf977dea1c74dfc199acf9d2a2f42f
   firebase_core: 8d552814f6c01ccde5d88939fced4ec26f2f5510
-<<<<<<< Updated upstream
-  firebase_database: 1e1cf63b2ede53468f61c3ef63f362ba6727810f
-  FirebaseAppCheckInterop: 9226f7217b43e99dfa0bc9f674ad8108cef89feb
-=======
   FirebaseAppCheckInterop: 9226f7217b43e99dfa0bc9f674ad8108cef89feb
   FirebaseAuth: ad59a1a7b161e75f74c39f70179d2482d40e2737
   FirebaseAuthInterop: 2a26ee1bea6d47df8048683cfa071e7da657798f
->>>>>>> Stashed changes
   FirebaseCore: 99fe0c4b44a39f37d99e6404e02009d2db5d718d
   FirebaseCoreExtension: 3d3f2017a00d06e09ab4ebe065391b0bb642565e
   FirebaseCoreInternal: df24ce5af28864660ecbd13596fc8dd3a8c34629
-<<<<<<< Updated upstream
-  FirebaseDatabase: f86d3da3a67e41b551a84a8c5b081d0f86a5a896
-=======
   FirebaseFirestore: 563a4ab1a65e2858f05e150bb4c31b0f8f79248b
   FirebaseFirestoreInternal: 8c5921c360a70e447bfeefb245f450e8b50e750b
->>>>>>> Stashed changes
   FirebaseSharedSwift: 574e6a5602afe4397a55c8d4f767382d620285de
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   gal: baecd024ebfd13c441269ca7404792a7152fde89
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
-<<<<<<< Updated upstream
-  leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
-<<<<<<< Updated upstream
-=======
-  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
-  rive_common: dd421daaf9ae69f0125aa761dd96abd278399952
->>>>>>> Stashed changes
-=======
   "gRPC-C++": 2fa52b3141e7789a28a737f251e0c45b4cb20a87
   gRPC-Core: a27c294d6149e1c39a7d173527119cfbc3375ce4
   GTMSessionFetcher: 75b671f9e551e4c49153d4c4f8659ef4f559b970
@@ -1496,8 +1412,7 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
   rive_common: dd421daaf9ae69f0125aa761dd96abd278399952
->>>>>>> Stashed changes
 
-PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+PODFILE CHECKSUM: fa1c758b2b6838d3b196938c25c2f243c02da750
 
 COCOAPODS: 1.16.2
