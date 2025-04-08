@@ -1,9 +1,11 @@
 
 import 'package:camera/camera.dart';
+import 'package:eyeblinkdetectface/index.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:eyeblinkdetectface/index.dart';
 
 class FaceSetup  extends StatefulWidget{
   final String email;
@@ -21,6 +23,12 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
   CameraController? cameraController;
   int selectedCameraIndex = 0;
   bool _isCapturingBurst = false;
+  final bool_isLoading = false;
+  bool _startWithInfo = true;
+  bool _allowAfterTimeOut = false;
+  final List<M7LivelynessStepItem> _verificationSteps = [];
+  int _timeOutDuration = 60;
+
 
 
   @override
@@ -83,8 +91,65 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
 
   @override
   void initState(){
+    _initValues();
     super.initState();
     _setupCameraController();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      detectBlink(context);
+    });
+  }
+
+  void _initValues(){
+    _verificationSteps.addAll(
+      [
+        M7LivelynessStepItem(
+          step: M7LivelynessStep.blink,
+          title: '1. Blink',
+          isCompleted: false
+        ),
+        M7LivelynessStepItem(
+          step: M7LivelynessStep.blink,
+          title: '2. Blink',
+          isCompleted: false
+        ),
+      ]
+    );
+    Eyeblinkdetectface.instance.configure(
+      contourColor: Colors.blue,
+      thresholds: [
+        M7BlinkDetectionThreshold(
+          leftEyeProbability: 0.25,
+          rightEyeProbability: 0.25,
+        ),
+        M7BlinkDetectionThreshold(
+          leftEyeProbability: 0.25,
+          rightEyeProbability: 0.25,
+        ),
+      ]
+    );
+  }
+
+  Future<void> detectBlink(BuildContext context) async {
+    final config = M7DetectionConfig(
+      steps: [
+        M7LivelynessStepItem(
+          step: M7LivelynessStep.blink, 
+          title: 'Blink', 
+          isCompleted: false,)
+      ],
+      startWithInfoScreen: _startWithInfo,
+      maxSecToDetect: _timeOutDuration == 100? 2500: _timeOutDuration,
+      allowAfterMaxSec: _allowAfterTimeOut,
+      captureButtonColor: Colors.red,
+      );
+      final String? response = await Eyeblinkdetectface.instance.detectLivelyness(
+        context, 
+        config: config);
+      
+      if (response != null){
+        print("Detected blinking, snapping pictures.");
+        _captureBurstPhotos(3, 10);
+      }
   }
 
   @override

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: LogIn(),
+      home: FaceSetup(email: 'keithnatakusuma@yahoo.com', password: 'richard2005'), // Change to your desired initial page
       routes: {
         '/home': (context) => HomePage(), // Define the login route if needed
       },
