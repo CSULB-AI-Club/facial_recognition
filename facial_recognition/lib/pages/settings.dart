@@ -9,6 +9,38 @@ class Settings extends StatelessWidget {
     double myWidth = MediaQuery.sizeOf(context).width;
     double myHeight = MediaQuery.sizeOf(context).height;
 
+    void _showLogoutDialog(BuildContext context) {
+      showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: Text("Log Out"),
+        content: Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close the dialog
+            },
+          ),
+          TextButton(
+            child: Text("Log Out", style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close the dialog
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LogIn()),
+                (route) => false, // Clear navigation stack
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
@@ -32,7 +64,8 @@ class Settings extends StatelessWidget {
                 settingOption('Profile', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
                 settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
                 settingOption('Connect to Insitution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
-                settingOption('Log Out', Icons.exit_to_app, context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
+                settingOption('Log Out', Icons.exit_to_app, context, () => _showLogoutDialog (context), isLogout: true,),
+                //Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
               ],
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:facial_recognition/pages/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rive/rive.dart';
 
 
 class LogIn extends StatefulWidget {
@@ -64,16 +65,28 @@ class _LogInState extends State<LogIn> {
           mainAxisAlignment: MainAxisAlignment.start, 
           children: [
             SizedBox(height: 200),
-            Text("Welcome", 
-              style: TextStyle(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                width: 80,
+                height: 80,
+                child: RiveAnimation.asset('assets/icons/eye_animation.riv', 
+                fit: BoxFit.contain,
+                ),
+              ),
+            SizedBox(
+              width: 10
+            ),
+            Text("Blinkey",
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 60,
-              fontWeight: FontWeight.bold,
-              height: 0.9),),
-            Text("BLINKEY", style: TextStyle(
-              color: Colors.black,
-              fontSize: 30,
-              fontWeight: FontWeight.normal),),
+              fontSize: 40,
+              fontWeight: FontWeight.bold
+            ),),
+          ],
+        ),
             Padding(
               padding: EdgeInsets.only(top: 20, left: 20, right: 20),
               //EMAIL TEXTFIELD

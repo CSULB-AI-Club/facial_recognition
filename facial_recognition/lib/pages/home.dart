@@ -16,9 +16,14 @@ class HomePage extends StatelessWidget{
   Widget build(BuildContext context){
     double myWidth = MediaQuery.sizeOf(context).width;
     double myHeight = MediaQuery.sizeOf(context).height;
+
+
+ 
+
     //tickets = Tickets.getTickets();
     return Scaffold(
         appBar: appBar(context),
+        
         body: 
         Container(
           height: myHeight,
@@ -135,10 +140,8 @@ class HomePage extends StatelessWidget{
             );
           }
           if (value == 2){
-              Navigator.of(context).push(
-              MaterialPageRoute(
-              builder: (context) => LogIn()),
-            );
+              _showLogoutDialog(context);
+      
           }
         },
         itemBuilder: (context)=>[
@@ -171,4 +174,37 @@ class HomePage extends StatelessWidget{
         
       );
   }
+
+
+
+      void _showLogoutDialog(BuildContext context) {
+      showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: Text("Log Out"),
+        content: Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close the dialog
+            },
+          ),
+          TextButton(
+            child: Text("Log Out", style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close dialog
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LogIn()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 }

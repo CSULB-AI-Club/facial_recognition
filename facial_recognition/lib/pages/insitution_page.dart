@@ -1,3 +1,4 @@
+import 'package:facial_recognition/pages/institution_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -59,9 +60,21 @@ class InsitutionPage extends StatelessWidget {
         width: MediaQuery.sizeOf(context).width * 0.95,
         height: 60,
         child: ElevatedButton(
-          onPressed: () {
+          //onPressed: () {
             // Add navigation or functionality here
-          },
+          //  MaterialPageRoute(builder: (context) => UrlInputScreen());
+          //},
+          onPressed: () {
+  if (isAddNew) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => UrlInputScreen()),
+    );
+  } else {
+    // Handle normal institution button press if needed
+  }
+},
+
           style: ElevatedButton.styleFrom(
             backgroundColor: isAddNew ? Colors.green : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
