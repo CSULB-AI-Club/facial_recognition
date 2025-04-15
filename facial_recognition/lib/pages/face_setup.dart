@@ -10,9 +10,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:eyeblinkdetectface/index.dart';
 
 class FaceSetup  extends StatefulWidget{
-  final String email;
-  final String password;
-  const FaceSetup({super.key, required this.email, required this.password});
+  final String uid;
+  const FaceSetup({super.key, required this.uid});
 
 
   @override
@@ -54,7 +53,7 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
       try {
         XFile picture = await cameraController!.takePicture();
         File pictureFile = File(picture.path);
-        await _uploadImages(File(pictureFile.path), widget.email, widget.password, i);
+        await _uploadImages(File(pictureFile.path), widget.uid, i);
         print("Burst Photo $i Saved: ${picture.path}");
       } catch (e) {
         print("Error in burst capture: $e");
@@ -63,10 +62,10 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
       await Future.delayed(Duration(milliseconds: interval));
     }
     setState(() => _isCapturingBurst = false);
-    Navigator.push(context,  MaterialPageRoute(builder: (context) => Camera(email: widget.email, password: widget.password)));
+    Navigator.push(context,  MaterialPageRoute(builder: (context) => Camera(uid: widget.uid)));
   }
 
-  Future<void> _uploadImages(File imageFile, String email, String password, int numEmbeddings) async {
+  Future<void> _uploadImages(File imageFile, String uid, int numEmbeddings) async {
     try {
     var request = http.MultipartRequest(
       'POST',
@@ -74,13 +73,8 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
     );
     
     request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: email,
-      password: password
-    );
-    User? user = FirebaseAuth.instance.currentUser;
-
-    request.fields['uid'] = user!.uid;
+    
+    request.fields['uid'] = uid;
     request.fields['num_embeddings'] = numEmbeddings.toString();
     var response = await request.send();
 

@@ -8,9 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 
 class Camera  extends StatefulWidget{
-  final String email;
-  final String password;
-  const Camera({super.key, required this.email, required this.password});
+  final String uid;
+  const Camera({super.key, required this.uid});
 
 
   @override
@@ -49,7 +48,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     try{
       XFile picture = await cameraController!.takePicture();
       File pictureFile = File(picture.path);
-      await _detectFace(File(pictureFile.path), widget.email, widget.password);
+      await _detectFace(File(pictureFile.path), widget.uid);
       print("Detected Face: ${picture.path}");
     }
     catch(e){
@@ -57,20 +56,20 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     }
   }
   
-  Future<void> _detectFace(File imageFile, String email, String password) async{
+  Future<void> _detectFace(File imageFile, String uid) async{
     try{
       var request = http.MultipartRequest(
         'POST',
         Uri.parse('http://192.168.0.163:5001/detection')
       );
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-      User? user = FirebaseAuth.instance.currentUser;
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-      request.fields['uid'] = user!.uid;
+      request.fields['uid'] = uid;
       var response = await request.send();  
       if (response.statusCode == 200) {
         print("Face detection successful");
-        Navigator.pushNamed(context, '/home');
+        Navigator.pushNamed(context, '/home', arguments: {
+          'uid': uid
+        });
       } else {
         print("Face detection failed with status code: ${response.statusCode}");
       }

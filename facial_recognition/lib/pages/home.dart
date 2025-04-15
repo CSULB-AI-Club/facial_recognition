@@ -14,6 +14,8 @@ class HomePage extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
+    final uid = args['uid'];
     double myWidth = MediaQuery.sizeOf(context).width;
     double myHeight = MediaQuery.sizeOf(context).height;
     //tickets = Tickets.getTickets();

@@ -46,7 +46,7 @@ class _EmailVerifyState extends State<EmailVerify> {
           'uid': user.uid,
         }),
         );
-        Navigator.push(context,  MaterialPageRoute(builder: (context) => FaceSetup(email: widget.email, password: widget.password)));
+        Navigator.push(context,  MaterialPageRoute(builder: (context) => FaceSetup(uid: user.uid)));
       }
 
     }
