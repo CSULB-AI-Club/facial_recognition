@@ -59,8 +59,8 @@ class HomePage extends StatelessWidget{
                   width: myWidth*0.95,
                   height: myHeight*0.19,
                   child:ElevatedButton(onPressed: (){
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Camera()));
+                  // Navigator.push(context, 
+                  // MaterialPageRoute(builder: (context) => Camera()));
                 
               } , 
                   style: ElevatedButton.styleFrom(
@@ -76,8 +76,8 @@ class HomePage extends StatelessWidget{
                   width: myWidth*0.95,
                   height: myHeight*0.19,
                   child:ElevatedButton(onPressed: (){
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Camera()));
+                  // Navigator.push(context, 
+                  // MaterialPageRoute(builder: (context) => Camera()));
                 
               } ,  
                   style: ElevatedButton.styleFrom(
@@ -93,8 +93,8 @@ class HomePage extends StatelessWidget{
                   width: myWidth*0.95,
                   height: myHeight*0.19,
                   child:ElevatedButton(onPressed: (){
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Camera()));
+                  // Navigator.push(context, 
+                  // MaterialPageRoute(builder: (context) => Camera()));
                 
               } , 
                   style: ElevatedButton.styleFrom(

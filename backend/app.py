@@ -10,8 +10,7 @@ from PIL import Image, ImageOps
 import pandas as pd
 from threading import Event, Thread
 from sklearn.metrics.pairwise import cosine_similarity
-
-
+from firebase_admin import auth
 
 
 app = Flask(__name__)
@@ -30,39 +29,42 @@ def create_user():
         return jsonify({"error": "Email is required"}), 400
     
     email = data["email"]
-    password = data["password"] # Hash the password
     first_name = data["first_name"]
-    last_name = data["last_name"]
-    user_id = str(uuid.uuid4())  # Generate a unique user ID
-    email_exists = db.collection("users").where("email", "==", email).get()
+    last_name = data["last_name"]  # Generate a unique user ID
+    user_id = data["uid"]
+    email_exists = db.collection("users").where("user_id", "==", user_id).get()
     if email_exists:
         return jsonify({"error": "Email already exists"}), 400
     else:
     # Store user in Firestore
         db.collection("users").document(user_id).set({
-            "user_id": user_id,
             "email": email,
-            "password": password,
             "last_name": last_name,
             "first_name": first_name,
-            "detection" : False
+            "detection" : True,
+            "user_id": user_id,
         })
     return jsonify({"message": "User created successfully", "user_id": user_id})
+
 
 
 @app.route("/authenticate", methods=["POST"])
 def authenticate():
     data = request.json
     print(f"Data: {data}")
-    if not data or "email" not in data:
-        return jsonify({"error": "Email is required"}), 400
-    email = data["email"]
-    password = data["password"] # Hash the password
-    user = db.collection("users").where("email", "==", email).where("password", "==", password).get()
+    if not data:
+        return jsonify({"error": "No data"}), 400
+    user_id = data["uid"]
+    user = db.collection("users").where("user_id", "==", user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
     else:
-        return jsonify({"message": "User authenticated successfully"}), 200
+        try:
+            custom_token = auth.create_custom_token(user_id)
+        except Exception as e:
+            print(f"Error authenticating user: {e}")
+            return jsonify({"error": "Authentication failed"}), 500
+        return jsonify({"message": "User authenticated successfully", "token": custom_token.decode("utf-8")}), 200
 
 
 @app.route("/upload", methods=["POST"])
@@ -72,11 +74,10 @@ def upload():
         return jsonify({"error": "File is required"}), 400
     
     file = request.files['image']
-    email = request.form.get("email")
-    password = request.form.get("password")
+    uid = request.form.get("uid")
     num_embeddings = request.form.get("num_embeddings")
     embedding_string = "Embedding" + num_embeddings
-    user = db.collection("users").where("email", "==", email).where("password", "==", password).get()
+    user = db.collection("users").where("user_id", "==", uid).get()
 
     user_doc = user[0].reference
     if file.filename == '':
@@ -94,7 +95,7 @@ def upload():
         embedding_string: embedding
     })
 
-    return jsonify({"message": "File uploaded successfully"}), 200
+    return jsonify({"message": "Face Embeddings uploaded successfully"}), 200
 
 def get_embeddings(file_path):
     try:
@@ -123,9 +124,8 @@ def detection():
     print("Receiving file...")
     #using distance based classification
     file = request.files['image']
-    email = request.form["email"]
-    password = request.form["password"]
-    user = db.collection("users").where("email", "==", email).where("password", "==", password).get()
+    uid = request.form.get("uid")
+    user = db.collection("users").where("user_id", "==", uid).get()
     user_doc = user[0]
     user_data = user_doc.to_dict()
     print(user_data.get("detection"))
@@ -137,19 +137,24 @@ def detection():
         embedding_2 = np.array(user_data.get("Embedding1"))
         embedding_3 = np.array(user_data.get("Embedding2"))
         embedding_mean = np.mean([embedding_1, embedding_2, embedding_3], axis=0)
+        print("Embedding mean sample: ", embedding_mean[:5])
         #retrieve embeddings from the incoming photo file
         embedding = np.array(get_embeddings(file_path))
         if embedding is None:
             return jsonify({"error": "No face found in the image"}), 403
         #calculate cosine similarity
         similarity = cosine_similarity([embedding], [embedding_mean]).flatten()[0]
-        print(f"similarity: {similarity}")
+        print(f"similarity/confidence between embedding and mean from profile: {similarity}")
         if similarity > 0.6:
             user_doc.reference.update({
                 "detection": False
             })
+            print("User Face is detected, authorizing entry...")
             return jsonify({"message": "User detected"}), 200
         else:
+            user_doc.reference.update({
+                "detection": False
+            })
             return jsonify({"message": "User not detected"}), 400
         
     else:

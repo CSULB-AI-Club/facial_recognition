@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -24,7 +23,7 @@ class _EmailVerifyState extends State<EmailVerify> {
     setState((){
       verifyError = '';
     });
-    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: widget.email, password: widget.password);
+    await FirebaseAuth.instance.signInWithEmailAndPassword(email: widget.email, password: widget.password);
     User? user = FirebaseAuth.instance.currentUser;
 
     if(user!= null){
@@ -36,15 +35,15 @@ class _EmailVerifyState extends State<EmailVerify> {
       else{
         print("Email if verified, moving to camera page");
         final response = await http.post(
-          Uri.parse('http://192.168.0.124:5001/create_user'),
+          Uri.parse('http://192.168.0.163:5001/create_user'),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },
         body: jsonEncode(<String, String>{
           'email': widget.email,
-          'password': widget.password,
           'first_name': widget.first_name,
-          'last_name': widget.last_name
+          'last_name': widget.last_name,
+          'uid': user.uid,
         }),
         );
         Navigator.push(context,  MaterialPageRoute(builder: (context) => FaceSetup(email: widget.email, password: widget.password)));

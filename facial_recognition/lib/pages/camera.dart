@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
-
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class Camera  extends StatefulWidget{
-  const Camera({super.key});
+  final String email;
+  final String password;
+  const Camera({super.key, required this.email, required this.password});
 
 
   @override
@@ -47,7 +49,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     try{
       XFile picture = await cameraController!.takePicture();
       File pictureFile = File(picture.path);
-      await _detectFace(File(pictureFile.path), 'keithnatakusuma@yahoo.com', 'richard2005');
+      await _detectFace(File(pictureFile.path), widget.email, widget.password);
       print("Detected Face: ${picture.path}");
     }
     catch(e){
@@ -59,12 +61,12 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     try{
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.0.124:5001/detection')
+        Uri.parse('http://192.168.0.163:5001/detection')
       );
-
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      User? user = FirebaseAuth.instance.currentUser;
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-      request.fields['email'] = email;
-      request.fields['password'] = password;
+      request.fields['uid'] = user!.uid;
       var response = await request.send();  
       if (response.statusCode == 200) {
         print("Face detection successful");

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:facial_recognition/pages/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'dart:convert';
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
 
@@ -35,12 +36,23 @@ class _LogInState extends State<LogIn> {
     }
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
       User? user = FirebaseAuth.instance.currentUser;
-
-      if(user != null){
-        print("Login Successful");
-        Navigator.pushNamed(context, '/home');
+      final response = await http.post(
+          Uri.parse('http://192.168.0.163:5001/authenticate'),
+          headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          "uid": user!.uid,
+        }),
+        );
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        String token = data['token'];
+        await FirebaseAuth.instance.signInWithCustomToken(token);
+        print("Sign in Successful");
+        Navigator.pushNamed(context, "/home");
       }
     }
     on FirebaseAuthException catch (e) {
