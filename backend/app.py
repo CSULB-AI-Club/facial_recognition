@@ -105,12 +105,13 @@ def link_institution_account():
         "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
     })
 
-   # Now call function to fetch initial tickets
-   # fetch_user_tickets(user_id)
-   ##### FINISH THIS #####
+    # calls the function that gets the tickets that the user has
+    fetch_user_tickets(user_id, inst_id, link_id)
 
-
-    pass
+    return jsonify({
+        "message": "Institution account linked successfully",
+        "link_id": link_id
+    })
 
 @app.route("/get_user_institutions", methods=["POST"])
 def get_user_institutions():
@@ -145,9 +146,85 @@ def get_user_institutions():
 
 ##### TICKET MANAGEMENT FUNCTIONS #####
 
-def fetch_user_tickets(user_id, institution, link_id):
-    """Gets users tickets during linking process"""
-    pass
+def fetch_user_tickets(user_id, institution_id, link_id):
+    """Fetch tickets from an institution for a user"""
+    # In a real app, this would call the institution's API
+    # For this mock, we'll create some sample tickets
+
+    # Get institution details
+    institution = db.collection("institutions").document(institution_id).get().to_dict()
+    institution_name = institution["name"]
+    
+    # Create mock tickets based on institution type
+    mock_tickets = []
+    current_date = datetime.now()
+    
+    if "Disney" in institution_name:
+        mock_tickets = [
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Disney World - Park Hopper",
+                "description": "Access to all Disney World parks",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Disney VIP Experience",
+                "description": "Skip the lines with VIP access",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=2)).strftime("%Y-%m-%d"),
+                "status": "active"
+            }
+        ]
+    elif "Ticketmaster" in institution_name:
+        mock_tickets = [
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Taylor Swift - The Eras Tour",
+                "description": "Concert at SoFi Stadium",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "NBA Finals - Game 5",
+                "description": "Lakers vs Celtics",
+                "valid_from": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
+                "status": "upcoming"
+            }
+        ]
+    else:
+        mock_tickets = [
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": f"{institution_name} General Admission",
+                "description": "Standard entry ticket",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=30)).strftime("%Y-%m-%d"),
+                "status": "active"
+            }
+        ]
+    
+    # Store the tickets in Firestore
+    for ticket in mock_tickets:
+        ticket_id = ticket["ticket_id"]
+        db.collection("tickets").document(ticket_id).set({
+            **ticket,
+            "user_id": user_id,
+            "institution_id": institution_id,
+            "link_id": link_id,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "accessed_count": 0,
+            "last_accessed": None
+        })
+    
+    return mock_tickets
+
+
 
 @app.route("/get_user_tickets", methods=["GET"])
 def get_user_tickets():
@@ -222,8 +299,55 @@ def activate_ticket():
 
 @app.route("/initialize_mock_data", methods=["POST"])
 def initialize_mock_data():
-    pass
-
+    """Initialize the database with mock institutions"""
+    # Default mock institutions
+    mock_institutions = [
+        {
+            "name": "Disney Parks",
+            "description": "Walt Disney World and Disneyland theme parks",
+            "logo_url": "https://example.com/disney_logo.png",
+            "auth_url": "https://api.disney.example.com/auth"
+        },
+        {
+            "name": "Ticketmaster",
+            "description": "Concerts, sports, and event tickets",
+            "logo_url": "https://example.com/ticketmaster_logo.png",
+            "auth_url": "https://api.ticketmaster.example.com/auth"
+        },
+        {
+            "name": "Universal Studios",
+            "description": "Universal theme parks and experiences",
+            "logo_url": "https://example.com/universal_logo.png",
+            "auth_url": "https://api.universal.example.com/auth"
+        },
+        {
+            "name": "Six Flags",
+            "description": "Six Flags theme parks",
+            "logo_url": "https://example.com/sixflags_logo.png",
+            "auth_url": "https://api.sixflags.example.com/auth"
+        },
+        {
+            "name": "StubHub",
+            "description": "Ticket reseller for sports and entertainment",
+            "logo_url": "https://example.com/stubhub_logo.png",
+            "auth_url": "https://api.stubhub.example.com/auth"
+        }
+    ]
+    
+    # Add each institution to Firestore
+    for institution in mock_institutions:
+        institution_id = str(uuid.uuid4())
+        db.collection("institutions").document(institution_id).set({
+            "institution_id": institution_id,
+            "name": institution["name"],
+            "description": institution["description"],
+            "logo_url": institution["logo_url"],
+            "auth_url": institution["auth_url"],
+            "api_key": f"mock_api_key_{institution_id[:8]}",  # Mock API key
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+    
+    return jsonify({"message": "Mock data initialized successfully"})
 
 
 
