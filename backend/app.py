@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from firebase_config import db  # Ensure you have firebase_config.py set up with Firestore
 import uuid  # To generate a unique user ID
@@ -26,17 +26,30 @@ app_face.prepare(ctx_id=0, det_size=(640, 640))
 
 ############# NEW FUNCTIONS (Added by Shaun ) ###########
 
+# Set up paths for storing logos
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logos')
+# Make sure the directory exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-##### INSTITUTION MANAGEMENT FUNCTIONS #####
+##### INSTITUTION MANAGEMENT FUNCTIONS ###############
 
 @app.route("/add_institution", methods=["POST"]) 
 def add_institution():
-    """Add a new institution to the database"""
+    """Add a new institution to the database with custom login requirements"""
     data = request.json
     
     if not data or "institution_name" not in data:
         return jsonify({"error": "Institution name is required"}), 400
+    
+    # Validate if login_requirements is provided and properly formatted
+    if "login_requirements" not in data or not isinstance(data["login_requirements"], list):
+        return jsonify({"error": "Login requirements must be provided as a list of field objects"}), 400
+    
+    # Validate each login requirement field has the required properties
+    for field in data["login_requirements"]:
+        if "field_name" not in field or "field_type" not in field or "required" not in field:
+            return jsonify({"error": "Each login requirement field must have field_name, field_type, and required properties"}), 400
     
     institution_id = str(uuid.uuid4())
 
@@ -45,11 +58,21 @@ def add_institution():
     if existing_inst:
         return jsonify({"error": "Institution already exists"}), 400
     
-    # Create institution in Firestore
+    # Create institution in Firestore with login requirements
     db.collection("institutions").document(institution_id).set({
         "institution_id": institution_id,
         "name": data["institution_name"],
-        ####### THIS NEEDS TO BE FINISHED ###########
+        "description": data.get("description", ""),
+        "logo_url": data.get("logo_url", ""),
+        "auth_url": data.get("auth_url", ""),
+        "api_key": data.get("api_key", f"mock_api_key_{institution_id[:8]}"),
+        "login_requirements": data["login_requirements"],
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+    
+    return jsonify({
+        "message": "Institution added successfully", 
+        "institution_id": institution_id
     })
 
 @app.route("/get_institutions", methods=["GET"])
@@ -60,7 +83,6 @@ def get_institutions():
     institution_list = []
     for institution in institutions:
         inst_data = institution.to_dict()
-        ### REMOVE HYPOTHETICAL SENSITIVE DATA HERE ###
         institution_list.append(inst_data)
 
     return jsonify({"institutions": institution_list})
@@ -70,42 +92,56 @@ def get_institutions():
 
 @app.route("/link_institution_account", methods=["POST"])
 def link_institution_account():
-    """Link a user account to an institution account"""
+    """Link a user account to an institution account with custom required fields"""
     data = request.json
 
     if not data or "user_id" not in data or "institution_id" not in data:
-        return jsonify({"error": "User ID and Institution ID are required"}), 400j
+        return jsonify({"error": "User ID and Institution ID are required"}), 400
     
     user_id = data["user_id"]
     inst_id = data["institution_id"]
+    credentials = data.get("credentials", {})
 
-    #Verify if user exists
+    # Verify if user exists
     user = db.collection("users").document(user_id).get()
     if not user.exists:
-        return jsonify({"error": "User not found"}), 400
+        return jsonify({"error": "User not found"}), 404
     
-    #Verify if institution exists
+    # Verify if institution exists
     inst = db.collection("institutions").document(inst_id).get()
     if not inst.exists:
-        return jsonify({"error": "Institution not foundj"}), 400
+        return jsonify({"error": "Institution not found"}), 404
     
-    # In a real app, this is where we'd verify credentials with the institutions API
-    # For this mock implementation, we'll just create he link 
+    # Get institution details including login requirements
+    institution_data = inst.to_dict()
+    login_requirements = institution_data.get("login_requirements", [])
+    
+    # Validate that all required credentials are provided
+    missing_fields = []
+    for field in login_requirements:
+        if field.get("required", False) and field["field_name"] not in credentials:
+            missing_fields.append(field["field_name"])
+    
+    if missing_fields:
+        return jsonify({
+            "error": f"Missing required credentials: {', '.join(missing_fields)}"
+        }), 400
 
+    # In a real app, this is where we'd verify credentials with the institution's API
+    # For this mock implementation, we'll just create the link
     link_id = str(uuid.uuid4())
 
-    # Store user-institution link
+    # Store user-institution link with the provided credentials
     db.collection("user_institutions").document(link_id).set({
         "link_id": link_id,
         "user_id": user_id,
         "institution_id": inst_id,
-        "institution_username": data.get(''), #fix this
-        "institution_user_id": data.get(''), #fix this
+        "credentials": credentials,  # Store all provided credentials
         "status": "active",
         "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
     })
 
-    # calls the function that gets the tickets that the user has
+    # Call function to fetch tickets that the user has
     fetch_user_tickets(user_id, inst_id, link_id)
 
     return jsonify({
@@ -145,11 +181,10 @@ def get_user_institutions():
 
 
 ##### TICKET MANAGEMENT FUNCTIONS #####
-
 def fetch_user_tickets(user_id, institution_id, link_id):
     """Fetch tickets from an institution for a user"""
     # In a real app, this would call the institution's API
-    # For this mock, we'll create some sample tickets
+    # For this mock, we'll create sample tickets based on institution type
 
     # Get institution details
     institution = db.collection("institutions").document(institution_id).get().to_dict()
@@ -159,7 +194,7 @@ def fetch_user_tickets(user_id, institution_id, link_id):
     mock_tickets = []
     current_date = datetime.now()
     
-    if "Disney" in institution_name:
+    if institution_name == "Disney Parks":
         mock_tickets = [
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -176,14 +211,22 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=2)).strftime("%Y-%m-%d"),
                 "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Epcot After Hours",
+                "description": "Special evening access to Epcot attractions",
+                "valid_from": (current_date + timedelta(days=3)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=3)).strftime("%Y-%m-%d"),
+                "status": "upcoming"
             }
         ]
-    elif "Ticketmaster" in institution_name:
+    elif institution_name == "Ticketmaster":
         mock_tickets = [
             {
                 "ticket_id": str(uuid.uuid4()),
                 "name": "Taylor Swift - The Eras Tour",
-                "description": "Concert at SoFi Stadium",
+                "description": "Concert at SoFi Stadium, Row A, Seat 15",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
                 "status": "active"
@@ -191,13 +234,95 @@ def fetch_user_tickets(user_id, institution_id, link_id):
             {
                 "ticket_id": str(uuid.uuid4()),
                 "name": "NBA Finals - Game 5",
-                "description": "Lakers vs Celtics",
+                "description": "Lakers vs Celtics, Section 112, Row 7, Seat 8",
                 "valid_from": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
                 "status": "upcoming"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Broadway: Hamilton",
+                "description": "Orchestra Center, Row F, Seat 107",
+                "valid_from": (current_date - timedelta(days=5)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date - timedelta(days=5)).strftime("%Y-%m-%d"),
+                "status": "expired"
+            }
+        ]
+    elif institution_name == "Universal Studios":
+        mock_tickets = [
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Universal 2-Day Pass",
+                "description": "Access to Universal Studios and Islands of Adventure",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=2)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Universal Express Pass",
+                "description": "Skip regular lines at participating attractions",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Halloween Horror Nights",
+                "description": "Special event access - October 31st",
+                "valid_from": (current_date + timedelta(days=45)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=45)).strftime("%Y-%m-%d"),
+                "status": "upcoming"
+            }
+        ]
+    elif institution_name == "Six Flags":
+        mock_tickets = [
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Six Flags Gold Season Pass",
+                "description": "Unlimited visits to all Six Flags parks",
+                "valid_from": (current_date - timedelta(days=30)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=335)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Flash Pass",
+                "description": "Priority access to selected rides",
+                "valid_from": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
+                "status": "upcoming"
+            }
+        ]
+    elif institution_name == "StubHub":
+        mock_tickets = [
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Coldplay World Tour",
+                "description": "Rose Bowl Stadium, Section 7, Row 20, Seats 5-6",
+                "valid_from": (current_date + timedelta(days=15)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=15)).strftime("%Y-%m-%d"),
+                "status": "upcoming"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "LA Dodgers vs SF Giants",
+                "description": "Dodger Stadium, Loge Level, Section 103, Row C, Seat 5",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": current_date.strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
+                "name": "Coachella Music Festival - Weekend 1",
+                "description": "General Admission with Shuttle Pass",
+                "valid_from": (current_date - timedelta(days=45)).strftime("%Y-%m-%d"),
+                "valid_until": (current_date - timedelta(days=43)).strftime("%Y-%m-%d"),
+                "status": "expired"
             }
         ]
     else:
+        # Default tickets for any other institution
         mock_tickets = [
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -223,7 +348,6 @@ def fetch_user_tickets(user_id, institution_id, link_id):
         })
     
     return mock_tickets
-
 
 
 @app.route("/get_user_tickets", methods=["GET"])
@@ -297,59 +421,176 @@ def activate_ticket():
 
 ##### INTIALIZE THE DATABASE WITH MOCK DATA #######
 
+@app.route('/static/logos/<path:filename>')
+def serve_logo(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
 @app.route("/initialize_mock_data", methods=["POST"])
 def initialize_mock_data():
-    """Initialize the database with mock institutions"""
-    # Default mock institutions
+    """Initialize the database with mock institutions including login requirements"""
+    # Create a mapping of institution names to logo filenames
+    # Assuming you've downloaded these files and placed them in your UPLOAD_FOLDER
+    logo_mapping = {
+        "Disney Parks": "disney_logo.png",
+        "Ticketmaster": "ticketmaster_logo.png",
+        "Universal Studios": "universal_logo.png",
+        "Six Flags": "sixflags_logo.png",
+        "StubHub": "stubhub_logo.png"
+    }
+    
+    # Base URL for accessing logos
+    base_url = request.host_url.rstrip('/') + '/static/logos/'
+    
+    # Default mock institutions with login requirements
     mock_institutions = [
         {
             "name": "Disney Parks",
             "description": "Walt Disney World and Disneyland theme parks",
-            "logo_url": "https://example.com/disney_logo.png",
-            "auth_url": "https://api.disney.example.com/auth"
+            "auth_url": "https://api.disney.example.com/auth",
+            "login_requirements": [
+                {
+                    "field_name": "email",
+                    "field_type": "email",
+                    "field_label": "Email Address",
+                    "required": True,
+                    "placeholder": "your.email@example.com"
+                },
+                {
+                    "field_name": "password",
+                    "field_type": "password",
+                    "field_label": "Password",
+                    "required": True,
+                    "placeholder": "Your Disney password"
+                },
+                {
+                    "field_name": "member_id",
+                    "field_type": "text",
+                    "field_label": "Disney Member ID",
+                    "required": False,
+                    "placeholder": "Optional: Enter your Member ID if available"
+                }
+            ]
         },
         {
             "name": "Ticketmaster",
             "description": "Concerts, sports, and event tickets",
-            "logo_url": "https://example.com/ticketmaster_logo.png",
-            "auth_url": "https://api.ticketmaster.example.com/auth"
+            "auth_url": "https://api.ticketmaster.example.com/auth",
+            "login_requirements": [
+                {
+                    "field_name": "username",
+                    "field_type": "text",
+                    "field_label": "Username",
+                    "required": True,
+                    "placeholder": "Your Ticketmaster username"
+                },
+                {
+                    "field_name": "password",
+                    "field_type": "password",
+                    "field_label": "Password",
+                    "required": True,
+                    "placeholder": "Your Ticketmaster password"
+                }
+            ]
         },
         {
             "name": "Universal Studios",
             "description": "Universal theme parks and experiences",
-            "logo_url": "https://example.com/universal_logo.png",
-            "auth_url": "https://api.universal.example.com/auth"
+            "auth_url": "https://api.universal.example.com/auth",
+            "login_requirements": [
+                {
+                    "field_name": "email",
+                    "field_type": "email",
+                    "field_label": "Email Address",
+                    "required": True,
+                    "placeholder": "your.email@example.com"
+                },
+                {
+                    "field_name": "password",
+                    "field_type": "password",
+                    "field_label": "Password",
+                    "required": True,
+                    "placeholder": "Your Universal password"
+                },
+                {
+                    "field_name": "annual_pass_number",
+                    "field_type": "text",
+                    "field_label": "Annual Pass Number",
+                    "required": False,
+                    "placeholder": "If you have an annual pass"
+                }
+            ]
         },
         {
             "name": "Six Flags",
             "description": "Six Flags theme parks",
-            "logo_url": "https://example.com/sixflags_logo.png",
-            "auth_url": "https://api.sixflags.example.com/auth"
+            "auth_url": "https://api.sixflags.example.com/auth",
+            "login_requirements": [
+                {
+                    "field_name": "member_number",
+                    "field_type": "text",
+                    "field_label": "Member Number",
+                    "required": True,
+                    "placeholder": "Your Six Flags member number"
+                },
+                {
+                    "field_name": "zipcode",
+                    "field_type": "text",
+                    "field_label": "Billing ZIP Code",
+                    "required": True,
+                    "placeholder": "Billing ZIP code"
+                }
+            ]
         },
         {
             "name": "StubHub",
             "description": "Ticket reseller for sports and entertainment",
-            "logo_url": "https://example.com/stubhub_logo.png",
-            "auth_url": "https://api.stubhub.example.com/auth"
+            "auth_url": "https://api.stubhub.example.com/auth",
+            "login_requirements": [
+                {
+                    "field_name": "email",
+                    "field_type": "email",
+                    "field_label": "Email Address",
+                    "required": True,
+                    "placeholder": "your.email@example.com"
+                },
+                {
+                    "field_name": "password",
+                    "field_type": "password",
+                    "field_label": "Password",
+                    "required": True,
+                    "placeholder": "Your StubHub password"
+                },
+                {
+                    "field_name": "phone",
+                    "field_type": "tel",
+                    "field_label": "Phone Number",
+                    "required": False,
+                    "placeholder": "For verification purposes"
+                }
+            ]
         }
     ]
     
     # Add each institution to Firestore
     for institution in mock_institutions:
         institution_id = str(uuid.uuid4())
+        
+        # Get the logo filename for this institution
+        logo_filename = logo_mapping.get(institution["name"])
+        logo_url = base_url + logo_filename if logo_filename else ""
+        
         db.collection("institutions").document(institution_id).set({
             "institution_id": institution_id,
             "name": institution["name"],
             "description": institution["description"],
-            "logo_url": institution["logo_url"],
+            "logo_url": logo_url,
             "auth_url": institution["auth_url"],
             "api_key": f"mock_api_key_{institution_id[:8]}",  # Mock API key
+            "login_requirements": institution["login_requirements"],
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
     
     return jsonify({"message": "Mock data initialized successfully"})
-
-
 
 
 
