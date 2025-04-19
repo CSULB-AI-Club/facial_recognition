@@ -24,9 +24,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
       home: LogIn(), // Change to your desired initial page
-      routes: {
-        '/home': (context) => HomePage(), // Define the login route if needed
-      },
     );
   }
 }

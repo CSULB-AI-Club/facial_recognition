@@ -5,6 +5,8 @@ import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:facial_recognition/pages/home.dart';
+
 
 
 class Camera  extends StatefulWidget{
@@ -48,7 +50,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     try{
       XFile picture = await cameraController!.takePicture();
       File pictureFile = File(picture.path);
-      await _detectFace(File(pictureFile.path), widget.uid);
+      await _detectFace(File(pictureFile.path), 'keithnatakusuma@yahoo.com', 'richard2005');
       print("Detected Face: ${picture.path}");
     }
     catch(e){
@@ -56,20 +58,19 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     }
   }
   
-  Future<void> _detectFace(File imageFile, String uid) async{
+  Future<void> _detectFace(File imageFile, String email, String password) async{
     try{
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.0.163:5001/detection')
+        Uri.parse('http://127.0.0.1:5001/detection')
       );
+
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-      request.fields['uid'] = uid;
+      request.fields['uid'] = widget.uid;
       var response = await request.send();  
       if (response.statusCode == 200) {
         print("Face detection successful");
-        Navigator.pushNamed(context, '/home', arguments: {
-          'uid': uid
-        });
+        Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(uid: widget.uid)));
       } else {
         print("Face detection failed with status code: ${response.statusCode}");
       }

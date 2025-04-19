@@ -3,7 +3,7 @@ import 'package:facial_recognition/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class Settings extends StatelessWidget {
+class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double myWidth = MediaQuery.sizeOf(context).width;
@@ -29,7 +29,7 @@ class Settings extends StatelessWidget {
             SizedBox(height: myHeight * 0.02),
             Column(
               children: [
-                settingOption('Profile', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
+                settingOption('Connections', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
                 settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
                 settingOption('Connect to Insitution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
                 settingOption('Log Out', Icons.exit_to_app, context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),

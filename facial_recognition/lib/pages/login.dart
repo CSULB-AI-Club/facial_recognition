@@ -1,3 +1,4 @@
+import 'package:facial_recognition/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:facial_recognition/pages/signup.dart';
@@ -39,7 +40,7 @@ class _LogInState extends State<LogIn> {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
       User? user = FirebaseAuth.instance.currentUser;
       final response = await http.post(
-          Uri.parse('http://192.168.0.163:5001/authenticate'),
+          Uri.parse('http://127.0.0.1:5001/authenticate'),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },
@@ -52,7 +53,7 @@ class _LogInState extends State<LogIn> {
         String token = data['token'];
         await FirebaseAuth.instance.signInWithCustomToken(token);
         print("Sign in Successful");
-        Navigator.pushNamed(context, "/home");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(uid: user.uid)));
       }
     }
     on FirebaseAuthException catch (e) {
