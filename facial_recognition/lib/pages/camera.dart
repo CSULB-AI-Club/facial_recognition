@@ -1,10 +1,8 @@
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:facial_recognition/pages/home.dart';
 
 

@@ -11,7 +11,7 @@ import 'package:facial_recognition/pages/settings.dart';
 
 class HomePage extends StatelessWidget{
   final String uid;
-  HomePage({super.key, required this.uid});
+  const HomePage({super.key, required this.uid});
   //List <Tickets> tickets = [];
 
 
@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget{
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
-                    Padding(padding: EdgeInsets.only(left: 15, bottom: 5),
+                    Padding(padding: EdgeInsets.only(left: 15),
                     child: Row(
                       children: [
                       Container(
@@ -65,7 +65,24 @@ class HomePage extends StatelessWidget{
                       child: Text('Welcome, ${userData['first_name']}', style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold), 
                       ))
                     ),
-                    
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Container(
+                        width: 1000,
+                        height: 670,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                          colors: [Color.fromRGBO(30, 90, 112, 1), Color.fromRGBO(57, 171, 214, 1)],
+                          ),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          )
+                        )
+                      ),
+                    )
                   ],
                 );
               }
@@ -124,7 +141,7 @@ class HomePage extends StatelessWidget{
               value: 1,
               child: ListTile(
                 leading: SvgPicture.asset('assets/icons/face_setup.svg', height: 24, width: 24),
-                title: Text('Add Ticket/Pass'),
+                title: Text('Setup Face ID'),
               ),
             ),
             PopupMenuItem(

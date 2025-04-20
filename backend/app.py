@@ -71,6 +71,8 @@ def add_institution():
         "institution_id": institution_id
     })
 
+# DEV NOTE (KEITH) : this function isn't necessary, there is firebase package that can manage these kinds of task in the frontend.
+
 @app.route("/get_institutions", methods=["GET"])
 def get_institutions():
     """Get all institutions"""
@@ -128,7 +130,7 @@ def link_institution_account():
     link_id = str(uuid.uuid4())
 
     # Store user-institution link with the provided credentials
-    db.collection("user_institutions").document(link_id).set({
+    db.collection("user_institutions").document(user_id).set({
         "link_id": link_id,
         "user_id": user_id,
         "institution_id": inst_id,
@@ -145,6 +147,7 @@ def link_institution_account():
         "link_id": link_id
     })
 
+# EDITOR NOTE (KEITH) : this function is also unnecessary 
 @app.route("/get_user_institutions", methods=["POST"])
 def get_user_institutions():
     """Get all institutions linked to a user"""

@@ -1,9 +1,12 @@
-import 'package:facial_recognition/pages/insitution_page.dart';
+import 'package:facial_recognition/pages/connections_page.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:facial_recognition/pages/institutions_page.dart';
 
 class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     double myWidth = MediaQuery.sizeOf(context).width;
@@ -29,9 +32,9 @@ class SettingsPage extends StatelessWidget {
             SizedBox(height: myHeight * 0.02),
             Column(
               children: [
-                settingOption('Connections', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
-                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
-                settingOption('Connect to Insitution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InsitutionPage()))),
+                settingOption('Connections', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage()))),
+                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage()))),
+                settingOption('Connect to Institution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionsPage()))),
                 settingOption('Log Out', Icons.exit_to_app, context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
               ],
             ),

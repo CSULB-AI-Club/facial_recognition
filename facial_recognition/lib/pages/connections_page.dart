@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class InsitutionPage extends StatelessWidget {
+class ConnectionsPage extends StatelessWidget {
+  const ConnectionsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     double myWidth = MediaQuery.sizeOf(context).width;
@@ -37,14 +40,19 @@ class InsitutionPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: myHeight * 0.02),
-            Column(
-              children: [
-                connectionOption('CSULB', 'assets/icons/CSULB.svg', context),
-                connectionOption('Fandango', 'assets/icons/fandango.svg', context),
-                connectionOption('Disneyland', 'assets/icons/DisneyLand.svg', context),
-                connectionOption('TicketMaster', 'assets/icons/ticketmaster.svg', context),
-                connectionOption('Add New Institution', 'assets/icons/add_institution.svg', context, isAddNew: true),
-              ],
+            StreamBuilder<QuerySnapshot>(
+              stream: null,
+              builder: (context, snapshot) {
+                return Column(
+                  children: [
+                    connectionOption('CSULB', 'assets/icons/CSULB.svg', context),
+                    connectionOption('Fandango', 'assets/icons/fandango.svg', context),
+                    connectionOption('Disneyland', 'assets/icons/DisneyLand.svg', context),
+                    connectionOption('TicketMaster', 'assets/icons/ticketmaster.svg', context),
+                    connectionOption('Add New Institution', 'assets/icons/add_institution.svg', context, isAddNew: true),
+                  ],
+                );
+              }
             ),
           ],
         ),
