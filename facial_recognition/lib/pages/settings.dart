@@ -5,7 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:facial_recognition/pages/institutions_page.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  final String uid;
+  const SettingsPage({super.key, required this.uid});
+  // const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +34,9 @@ class SettingsPage extends StatelessWidget {
             SizedBox(height: myHeight * 0.02),
             Column(
               children: [
-                settingOption('Connections', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage()))),
-                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage()))),
-                settingOption('Connect to Institution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionsPage()))),
+                settingOption('Connections', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage(uid: uid)))),
+                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage(uid: uid)))),
+                settingOption('Connect to Institution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionsPage(uid: uid)))),
                 settingOption('Log Out', Icons.exit_to_app, context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
               ],
             ),

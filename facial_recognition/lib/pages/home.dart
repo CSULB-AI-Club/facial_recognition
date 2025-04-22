@@ -88,8 +88,8 @@ class HomePage extends StatelessWidget{
               }
             ),
             //ticketing section for user
-            StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('tickets').doc(uid).snapshots(),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('tickets').where("user_id", isEqualTo: uid).snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return Center(child: CircularProgressIndicator());
@@ -128,7 +128,7 @@ class HomePage extends StatelessWidget{
             if (value == 2){
               Navigator.of(context).push(
                 MaterialPageRoute(
-                builder: (context) => SettingsPage()));
+                builder: (context) => SettingsPage(uid: uid)));
             }
             if (value == 3){
               Navigator.of(context).push(
@@ -183,7 +183,7 @@ class HomePage extends StatelessWidget{
             Navigator.of(context).push(
               MaterialPageRoute(
               //builder: (context) => const Settings()),
-              builder: (context) =>  SettingsPage()),
+              builder: (context) =>  SettingsPage(uid: uid)),
             );
           }
           // if (value == 2){

@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/material.dart';
 
 class ConnectionsPage extends StatelessWidget {
-  const ConnectionsPage({super.key});
+  final String uid;
+  const ConnectionsPage({super.key, required this.uid});
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +43,30 @@ class ConnectionsPage extends StatelessWidget {
             ),
             SizedBox(height: myHeight * 0.02),
             StreamBuilder<QuerySnapshot>(
-              stream: null,
+              stream: FirebaseFirestore.instance.collection('user_institutions').where("user_id", isEqualTo: uid).snapshots(),
               builder: (context, snapshot) {
-                return Column(
-                  children: [
-                    connectionOption('CSULB', 'assets/icons/CSULB.svg', context),
-                    connectionOption('Fandango', 'assets/icons/fandango.svg', context),
-                    connectionOption('Disneyland', 'assets/icons/DisneyLand.svg', context),
-                    connectionOption('TicketMaster', 'assets/icons/ticketmaster.svg', context),
-                    connectionOption('Add New Institution', 'assets/icons/add_institution.svg', context, isAddNew: true),
-                  ],
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                final institutions = snapshot.data!.docs;
+                if (institutions.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No connected institutions',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: institutions.length,
+                  itemBuilder: (context, index) {
+                    final institution = institutions[index];
+                    final data = institution.data() as Map<String, dynamic>;
+                    final institutionName = data['institution_name'] ?? 'Unknown Institution';
+                    final assetPath = data['asset_path'] ?? 'assets/icons/default.svg';
+
+                    return connectionOption(institutionName, assetPath, context);
+                  },
                 );
               }
             ),

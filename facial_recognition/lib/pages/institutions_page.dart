@@ -6,10 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:facial_recognition/pages/institution_connect.dart';
 
 
 class InstitutionsPage extends StatefulWidget {
-  const InstitutionsPage({super.key});
+  final String uid;
+  const InstitutionsPage({super.key, required this.uid});
 
   @override
   State<InstitutionsPage> createState() => _MyWidgetState();
@@ -43,9 +45,6 @@ class _MyWidgetState extends State<InstitutionsPage> {
                 return Center(child: CircularProgressIndicator());
               }
               final institutions = snapshot.data!.docs;
-              for (var doc in institutions){
-                print(doc.data()); 
-              }
               return ListView.builder(
                 itemCount: institutions.length,
                 itemBuilder: (context, index) {
@@ -61,7 +60,8 @@ class _MyWidgetState extends State<InstitutionsPage> {
                   return connectionOption(
                     data['name'] ?? 'Unknown Institution',
                     context,
-                    isAddNew: false,
+                    data['institution_id'] ?? 'Unknown ID',
+                    data['api_key'] ?? 'Unknown API Key',
                   );
                   
                 },
@@ -72,7 +72,7 @@ class _MyWidgetState extends State<InstitutionsPage> {
       )
     );
   }
-    Widget connectionOption(String title, BuildContext context, {bool isAddNew = false}) {
+    Widget connectionOption(String title, BuildContext context, inst_id, api_Key) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: SizedBox(
@@ -80,7 +80,16 @@ class _MyWidgetState extends State<InstitutionsPage> {
         height: 60,
         child: ElevatedButton(
           onPressed: () {
-
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InstitutionConnect(
+                  institution_id: inst_id,
+                  uid: widget.uid,
+                  institution_name: title,
+                ),
+              ),
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,

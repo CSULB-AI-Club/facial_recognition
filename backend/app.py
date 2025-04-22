@@ -93,10 +93,10 @@ def link_institution_account():
     """Link a user account to an institution account with custom required fields"""
     data = request.json
 
-    if not data or "user_id" not in data or "institution_id" not in data:
+    if not data or "uid" not in data or "institution_id" not in data:
         return jsonify({"error": "User ID and Institution ID are required"}), 400
     
-    user_id = data["user_id"]
+    user_id = data["uid"]
     inst_id = data["institution_id"]
     credentials = data.get("credentials", {})
 
@@ -117,8 +117,8 @@ def link_institution_account():
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
-        if field.get("required", False) and field["field_name"] not in credentials:
-            missing_fields.append(field["field_name"])
+        if field.get("required", False) and field["field_label"] not in credentials:
+            missing_fields.append(field["field_label"])
     
     if missing_fields:
         return jsonify({
@@ -127,10 +127,11 @@ def link_institution_account():
 
     # In a real app, this is where we'd verify credentials with the institution's API
     # For this mock implementation, we'll just create the link
+    # this unique ID will be for the document ID, so everything is unique, but tied to each other by user_id
     link_id = str(uuid.uuid4())
 
     # Store user-institution link with the provided credentials
-    db.collection("user_institutions").document(user_id).set({
+    db.collection("user_institutions").document(link_id).set({
         "link_id": link_id,
         "user_id": user_id,
         "institution_id": inst_id,
