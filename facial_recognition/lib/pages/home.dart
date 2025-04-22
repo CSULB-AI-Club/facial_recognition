@@ -103,6 +103,9 @@ class HomePage extends StatelessWidget{
 
         
   }
+  Widget ticketObject(String title, BuildContext context, ticket_id){
+    return Placeholder();
+  }
 
   Padding blinkeyPopUp(BuildContext context) {
     return Padding(
@@ -164,6 +167,7 @@ class HomePage extends StatelessWidget{
       ),
     );
   }
+
 
   AppBar appBar(BuildContext context) {
     return AppBar(
@@ -229,4 +233,6 @@ class HomePage extends StatelessWidget{
         
       );
   }
+
+
 }

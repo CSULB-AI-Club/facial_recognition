@@ -42,33 +42,38 @@ class ConnectionsPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: myHeight * 0.02),
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('user_institutions').where("user_id", isEqualTo: uid).snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                final institutions = snapshot.data!.docs;
-                if (institutions.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No connected institutions',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('user_institutions').where("user_id", isEqualTo: uid).snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  final institutions = snapshot.data!.docs;
+                  if (institutions.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No connected institutions',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: institutions.length,
+                    itemBuilder: (context, index) {
+                      try {
+                        final institution = institutions[index];
+                        final data = institution.data() as Map<String, dynamic>;
+                        print(data);
+                        final institutionName = data['institution_name'] ?? 'Unknown Institution';
+                        return connectionOption(institutionName, context);
+                      } catch (e) {
+                        return Center(child: Text('Error loading institution'));
+                      }
+                    },
                   );
                 }
-                return ListView.builder(
-                  itemCount: institutions.length,
-                  itemBuilder: (context, index) {
-                    final institution = institutions[index];
-                    final data = institution.data() as Map<String, dynamic>;
-                    final institutionName = data['institution_name'] ?? 'Unknown Institution';
-                    final assetPath = data['asset_path'] ?? 'assets/icons/default.svg';
-
-                    return connectionOption(institutionName, assetPath, context);
-                  },
-                );
-              }
+              ),
             ),
           ],
         ),
@@ -76,7 +81,7 @@ class ConnectionsPage extends StatelessWidget {
     );
   }
 
-  Widget connectionOption(String title, String assetPath, BuildContext context, {bool isAddNew = false}) {
+  Widget connectionOption(String title,  BuildContext context, {bool isAddNew = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: SizedBox(
@@ -93,7 +98,6 @@ class ConnectionsPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SvgPicture.asset(assetPath, height: 24, width: 24, color: isAddNew ? Colors.white : Colors.black),
               SizedBox(width: 15),
               Text(
                 title,

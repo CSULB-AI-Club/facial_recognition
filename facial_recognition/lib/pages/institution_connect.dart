@@ -29,7 +29,8 @@ class _InstitutionConnectState extends State<InstitutionConnect> {
         body: jsonEncode({
           "uid": widget.uid,
           "institution_id": widget.institution_id,
-          "credentials": credentials_str
+          "credentials": credentials_str,
+          "institution_name": widget.institution_name
         }),
       );
       print("Status: ${response.statusCode}");
@@ -116,7 +117,7 @@ class _InstitutionConnectState extends State<InstitutionConnect> {
                         color: Colors.white, 
                         fontSize: 20,
                         fontWeight: FontWeight.bold
-                        ))
+                      ))
                     ),
                   ),
                 ),

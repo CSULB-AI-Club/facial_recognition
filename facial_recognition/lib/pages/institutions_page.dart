@@ -73,44 +73,59 @@ class _MyWidgetState extends State<InstitutionsPage> {
     );
   }
     Widget connectionOption(String title, BuildContext context, inst_id, api_Key) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: SizedBox(
-        width: MediaQuery.sizeOf(context).width * 0.95,
-        height: 60,
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => InstitutionConnect(
-                  institution_id: inst_id,
-                  uid: widget.uid,
-                  institution_name: title,
+    return Row(
+      children: [
+        Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SizedBox(width: 15),
+            Container(
+              width:250,
+              height: 75,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, top: 25),
+                child: Text(
+                  textAlign: TextAlign.start,
+                  title,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(width: 15),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+            SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InstitutionConnect(
+                      institution_id: inst_id,
+                      uid: widget.uid,
+                      institution_name: title,
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(20)),
+              child: Icon(Icons.add, color: Colors.black, size: 20),
+            ),
+          ],
+        )
       ),
-    );
+
+    ]);
   }
 }

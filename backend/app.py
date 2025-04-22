@@ -135,6 +135,7 @@ def link_institution_account():
         "link_id": link_id,
         "user_id": user_id,
         "institution_id": inst_id,
+        "institution_name": data["institution_name"],
         "credentials": credentials,  # Store all provided credentials
         "status": "active",
         "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
