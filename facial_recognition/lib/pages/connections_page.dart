@@ -64,7 +64,6 @@ class ConnectionsPage extends StatelessWidget {
                       try {
                         final institution = institutions[index];
                         final data = institution.data() as Map<String, dynamic>;
-                        print(data);
                         final institutionName = data['institution_name'] ?? 'Unknown Institution';
                         return connectionOption(institutionName, context);
                       } catch (e) {
@@ -83,7 +82,7 @@ class ConnectionsPage extends StatelessWidget {
 
   Widget connectionOption(String title,  BuildContext context, {bool isAddNew = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       child: SizedBox(
         width: MediaQuery.sizeOf(context).width * 0.95,
         height: 60,
