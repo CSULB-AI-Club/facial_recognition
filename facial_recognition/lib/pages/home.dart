@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
 import 'package:facial_recognition/pages/settings.dart';
 import 'package:facial_recognition/pages/widgets/hold_button.dart';
+import 'package:flutter/services.dart';
 //import 'package:facial_recognition/models/tickets.dart';
 
 class HomePage extends StatelessWidget{
@@ -18,14 +19,16 @@ class HomePage extends StatelessWidget{
 
   Future<void> activateTicket() async {
     // Simulate a network call to activate the ticket
-    await Future.delayed(Duration(seconds: 1));
+    // DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    // var detection = userDoc.data()?['detection'] ?? false;
+    // await Future.delayed(Duration(seconds: 1));
     FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'detection': true,
-    });
-    await Future.delayed(Duration(seconds: 60));
-    FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'detection': false,
-    });
+        'detection': true,
+      });
+      await Future.delayed(Duration(seconds: 15));
+      FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'detection': false,
+      });
     // Here you would typically call your activation function
     // For example:
     // await activateTicket(ticketId);
@@ -79,11 +82,12 @@ class HomePage extends StatelessWidget{
                           setState(() {
                             isLoading = true;
                           });
+                          HapticFeedback.mediumImpact();
                           // Simulate a network call
                           await Future.delayed(Duration(seconds: 1));
                           // Here you would typically call your activation function
                           // For example:
-                          activateTicket();
+                          
                           setState(() {
                             isLoading = false;
                           });
@@ -145,7 +149,7 @@ class HomePage extends StatelessWidget{
                     ],)
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(left: 25),
+                      padding: const EdgeInsets.only(left: 25,),
                       child: Opacity(opacity: 1,
                       child: Text('Welcome, ${userData['first_name']}', style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold), 
                       ))
@@ -158,8 +162,8 @@ class HomePage extends StatelessWidget{
             Padding(
                 padding: const EdgeInsets.only(top: 0),
                 child: Container(
-                  width: 1000,
-                  height: 680,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.778,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                     colors: [Color.fromRGBO(30, 90, 112, 1), Color.fromRGBO(57, 171, 214, 1)],
@@ -186,6 +190,23 @@ class HomePage extends StatelessWidget{
                           ),
                         );
                       }
+                      tickets.sort((a, b){
+                        final aDate = (a.data() as Map<String, dynamic>)['status'] ?? '';
+                        final bDate = (b.data() as Map<String, dynamic>)['status'] ?? '';
+                        int TicketSort(String status){
+                          switch(status){
+                            case 'Active':
+                              return 0;
+                            case 'Upcoming':
+                              return 1;
+                            case 'Expired':
+                              return 2;
+                            default:
+                              return 3;
+                          }
+                        }
+                        return TicketSort(aDate).compareTo(TicketSort(bDate));
+                      });
                       return ListView.builder(
                         itemCount: tickets.length,
                         itemBuilder: (context, index){
@@ -214,6 +235,7 @@ class HomePage extends StatelessWidget{
         
   }
 Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
+  bool isDisabled = (status == 'Expired' || status == 'Upcoming');
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
     width: double.infinity,
@@ -227,7 +249,8 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () {
+        onTap: isDisabled ? null: 
+        () {
           showActivationPopup(context, title, description, status);
         },
         child: Row(
@@ -256,16 +279,16 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
                     Text(title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDisabled? Colors.grey: Colors.black),),
                     SizedBox(height: 10),
                     Text(description,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16)),
+                        style: TextStyle(fontSize: 16, color: isDisabled? Colors.grey: Colors.black)),
                     Text("Status: $status",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDisabled? Colors.grey: Colors.black)),
                     SizedBox(height: 10),
                   ],
                 ),
