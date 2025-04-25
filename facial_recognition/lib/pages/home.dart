@@ -7,17 +7,34 @@ import 'package:flutter_svg/svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
 import 'package:facial_recognition/pages/settings.dart';
+import 'package:facial_recognition/pages/widgets/hold_button.dart';
 //import 'package:facial_recognition/models/tickets.dart';
 
 class HomePage extends StatelessWidget{
   final String uid;
   const HomePage({super.key, required this.uid});
   //List <Tickets> tickets = [];
+  
 
-  void showActivationPopup(BuildContext context, String ticketName) {
+  Future<void> activateTicket() async {
+    // Simulate a network call to activate the ticket
+    await Future.delayed(Duration(seconds: 1));
+    FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'detection': true,
+    });
+    await Future.delayed(Duration(seconds: 60));
+    FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'detection': false,
+    });
+    // Here you would typically call your activation function
+    // For example:
+    // await activateTicket(ticketId);
+  }
+
+  void showActivationPopup(BuildContext context, String ticketName, String ticket_description, String status) {
   showDialog(
     context: context,
-    barrierDismissible: false, // User must confirm
+    barrierDismissible: true, // User must confirm
     builder: (context) {
       bool isLoading = false;
 
@@ -25,13 +42,27 @@ class HomePage extends StatelessWidget{
         builder: (context, setState) {
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text("Activate Ticket", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            title: Text("Activate Ticket", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Are you sure you want to activate \"$ticketName\"?",
+                  ticketName,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  ticket_description,
                   style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Are you sure you want to activate this ticket?",
+                  style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 20),
                 isLoading
@@ -42,24 +73,25 @@ class HomePage extends StatelessWidget{
                           Text("Activating ticket...")
                         ],
                       )
-                    : ElevatedButton(
-                        onPressed: () {
-                          setState(() => isLoading = true);
-
-                          Future.delayed(Duration(seconds: 3), () {
-                            Navigator.pop(context);
-                            // TODO: Place ticket activation logic here
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Ticket "$ticketName" activated!')),
-                            );
+                    : HoldToConfirmButton(
+                        holdDuration: Duration(seconds: 2),
+                        onConfirmed: () async{
+                          setState(() {
+                            isLoading = true;
                           });
+                          // Simulate a network call
+                          await Future.delayed(Duration(seconds: 1));
+                          // Here you would typically call your activation function
+                          // For example:
+                          activateTicket();
+                          setState(() {
+                            isLoading = false;
+                          });
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Ticket Activated!", textAlign: TextAlign.center,)),
+                          );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: Text("Activate Now", style: TextStyle(fontSize: 18)),
                       ),
               ],
             ),
@@ -72,6 +104,7 @@ class HomePage extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
+    
     //tickets = Tickets.getTickets();
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 252, 251, 251),
@@ -126,7 +159,7 @@ class HomePage extends StatelessWidget{
                 padding: const EdgeInsets.only(top: 0),
                 child: Container(
                   width: 1000,
-                  height: 670,
+                  height: 680,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                     colors: [Color.fromRGBO(30, 90, 112, 1), Color.fromRGBO(57, 171, 214, 1)],
@@ -163,8 +196,8 @@ class HomePage extends StatelessWidget{
                             final ticket_name = data['name'] ?? 'Unknown Ticket';
                             final ticket_id = data['ticket_id'] ?? 'Unknown Ticket ID';
                             final description = data['description'] ?? 'No description available'; 
-                            print(ticket_name);
-                            return ticketObject(ticket_name, context, ticket_id, description);
+                            final status = data['status'] ?? 'Unknown Status';
+                            return ticketObject(ticket_name, context, ticket_id, description, status);
                           } catch (e) {
                             return Center(child: Text('Error loading ticket'));
                           }
@@ -180,7 +213,7 @@ class HomePage extends StatelessWidget{
 
         
   }
-Widget ticketObject(String title, BuildContext context, String ticket_id, String description) {
+Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
     width: double.infinity,
@@ -195,13 +228,13 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: () {
-          showActivationPopup(context, title);
+          showActivationPopup(context, title, description, status);
         },
         child: Row(
           children: [
             // Stub on left
             Container(
-              width: 80,
+              width: 60,
               height: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.redAccent,
@@ -229,6 +262,11 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16)),
+                    Text("Status: $status",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 10),
                   ],
                 ),
               ),
