@@ -16,40 +16,20 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
   final Map<String, TextEditingController> _controllers = {};
   final _formKey = GlobalKey<FormState>();
 
-  List<String> userIds = [];
   String? matchedUserId;
 
   String backendUrl = "http://127.0.0.1:5001"; 
 
-@override
-void initState() {
-  super.initState();
-  fetchUserInstitutionIds();
+  @override
+  void initState() {
+    super.initState();
 
-  final fields = widget.institution["login_requirements"] ?? [];
-  for (var field in fields) {
-    _controllers[field["field_name"]] = TextEditingController();
+    // Initialize form fields dynamically based on institution's requirements
+    final fields = widget.institution["login_requirements"] ?? [];
+    for (var field in fields) {
+      _controllers[field["field_name"]] = TextEditingController();
+    }
   }
-}
-
-Future<void> fetchUserInstitutionIds() async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection('user_institutions')
-      .get();
-
-  final ids = snapshot.docs
-    .where((doc) => doc.data().containsKey('user_id'))
-    .map((doc) => doc['user_id'].toString())
-    .toList();
-
-  print("Fetched user IDs: $ids");
-
-  setState(() {
-    userIds = ids;
-    matchedUserId = ids.isNotEmpty ? ids.first : null; // Use the first one for now
-  });
-}
-
 
   @override
   void dispose() {
@@ -64,16 +44,15 @@ Future<void> fetchUserInstitutionIds() async {
       for (var key in _controllers.keys) key: _controllers[key]!.text
     };
 
-  final response = await http.post(
-  Uri.parse('$backendUrl/link_institution_account'),
-  headers: {'Content-Type': 'application/json'},
-  body: jsonEncode({
-    "user_id": matchedUserId,
-    "institution_id": widget.institution["institution_id"],
-    "credentials": credentials,
-  }),
-);
-
+    final response = await http.post(
+      Uri.parse('$backendUrl/link_institution_account'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "user_id": matchedUserId,
+        "institution_id": widget.institution["institution_id"],
+        "credentials": credentials,
+      }),
+    );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -90,8 +69,6 @@ Future<void> fetchUserInstitutionIds() async {
 
   @override
   Widget build(BuildContext context) {
-    final fields = widget.institution["login_requirements"] ?? [];
-
     return Scaffold(
       appBar: AppBar(title: Text("Connect to ${widget.institution['name']}")),
       body: Padding(
@@ -100,38 +77,73 @@ Future<void> fetchUserInstitutionIds() async {
           key: _formKey,
           child: Column(
             children: [
-              ...fields.map((field) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: TextFormField(
-                      controller: _controllers[field["field_name"]],
-                      obscureText: field["field_type"] == "password",
-                      keyboardType: field["field_type"] == "email"
-                          ? TextInputType.emailAddress
-                          : TextInputType.text,
-                      decoration: InputDecoration(
-                        labelText: field["field_label"] ?? field["field_name"],
-                        hintText: field["placeholder"] ?? '',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if ((field["required"] ?? false) && (value == null || value.isEmpty)) {
-                          return "${field["field_label"] ?? field["field_name"]} is required";
-                        }
-                        return null;
-                      },
-                    ),
-                  )),
-              SizedBox(height: 20),
-              ElevatedButton(
-              onPressed: submitCredentials,
-              child: Text("Connect"),
-              style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green, // 👈 this makes it green
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  ),
-),
+              // StreamBuilder to listen to real-time changes in the user_institutions collection
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('user_institutions')
+                    .where('user_id', isEqualTo: matchedUserId) // Fetch only institutions related to the user
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
 
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Something went wrong!'));
+                  }
+
+                  if (snapshot.hasData) {
+                    final institutions = snapshot.data!.docs;
+
+                    // If no institutions are found for the user
+                    if (institutions.isEmpty) {
+                      return Center(child: Text('No institutions linked.'));
+                    }
+
+                    // Custom form based on institution's login requirements
+                    final fields = widget.institution["login_requirements"] ?? [];
+
+                    return Column(
+                      children: [
+                        // Render form fields dynamically based on institution's login requirements
+                        ...fields.map((field) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: TextFormField(
+                                controller: _controllers[field["field_name"]],
+                                obscureText: field["field_type"] == "password",
+                                keyboardType: field["field_type"] == "email"
+                                    ? TextInputType.emailAddress
+                                    : TextInputType.text,
+                                decoration: InputDecoration(
+                                  labelText: field["field_label"] ?? field["field_name"],
+                                  hintText: field["placeholder"] ?? '',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (value) {
+                                  if ((field["required"] ?? false) && (value == null || value.isEmpty)) {
+                                    return "${field["field_label"] ?? field["field_name"]} is required";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            )),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: submitCredentials,
+                          child: Text("Connect"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green, // 👈 this makes it green
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Center(child: Text('No user institutions found.'));
+                },
+              ),
             ],
           ),
         ),
@@ -139,3 +151,4 @@ Future<void> fetchUserInstitutionIds() async {
     );
   }
 }
+
