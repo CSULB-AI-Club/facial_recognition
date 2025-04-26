@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Important
 import 'dart:convert';
 
 class InstitutionLinkPage extends StatefulWidget {
@@ -16,15 +17,15 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
   final Map<String, TextEditingController> _controllers = {};
   final _formKey = GlobalKey<FormState>();
 
-  String? matchedUserId;
+  final String backendUrl = "http://127.0.0.1:5001";
 
-  String backendUrl = "http://127.0.0.1:5001"; 
+  late final String matchedUserId; // <-- this will be assigned in initState
 
   @override
   void initState() {
     super.initState();
+    matchedUserId = FirebaseAuth.instance.currentUser!.uid; // Always use logged-in user
 
-    // Initialize form fields dynamically based on institution's requirements
     final fields = widget.institution["login_requirements"] ?? [];
     for (var field in fields) {
       _controllers[field["field_name"]] = TextEditingController();
@@ -57,6 +58,9 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       print("Linked! Link ID: ${data['link_id']}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Connected successfully")),
+      );
       Navigator.pop(context, widget.institution["institution_id"]);
     } else {
       final err = jsonDecode(response.body);
@@ -69,6 +73,8 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
 
   @override
   Widget build(BuildContext context) {
+    final fields = widget.institution["login_requirements"] ?? [];
+
     return Scaffold(
       appBar: AppBar(title: Text("Connect to ${widget.institution['name']}")),
       body: Padding(
@@ -77,72 +83,36 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
           key: _formKey,
           child: Column(
             children: [
-              // StreamBuilder to listen to real-time changes in the user_institutions collection
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('user_institutions')
-                    .where('user_id', isEqualTo: matchedUserId) // Fetch only institutions related to the user
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Something went wrong!'));
-                  }
-
-                  if (snapshot.hasData) {
-                    final institutions = snapshot.data!.docs;
-
-                    // If no institutions are found for the user
-                    if (institutions.isEmpty) {
-                      return Center(child: Text('No institutions linked.'));
-                    }
-
-                    // Custom form based on institution's login requirements
-                    final fields = widget.institution["login_requirements"] ?? [];
-
-                    return Column(
-                      children: [
-                        // Render form fields dynamically based on institution's login requirements
-                        ...fields.map((field) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: TextFormField(
-                                controller: _controllers[field["field_name"]],
-                                obscureText: field["field_type"] == "password",
-                                keyboardType: field["field_type"] == "email"
-                                    ? TextInputType.emailAddress
-                                    : TextInputType.text,
-                                decoration: InputDecoration(
-                                  labelText: field["field_label"] ?? field["field_name"],
-                                  hintText: field["placeholder"] ?? '',
-                                  border: OutlineInputBorder(),
-                                ),
-                                validator: (value) {
-                                  if ((field["required"] ?? false) && (value == null || value.isEmpty)) {
-                                    return "${field["field_label"] ?? field["field_name"]} is required";
-                                  }
-                                  return null;
-                                },
-                              ),
-                            )),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: submitCredentials,
-                          child: Text("Connect"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green, // 👈 this makes it green
-                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  return Center(child: Text('No user institutions found.'));
-                },
+              ...fields.map((field) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: TextFormField(
+                      controller: _controllers[field["field_name"]],
+                      obscureText: field["field_type"] == "password",
+                      keyboardType: field["field_type"] == "email"
+                          ? TextInputType.emailAddress
+                          : TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: field["field_label"] ?? field["field_name"],
+                        hintText: field["placeholder"] ?? '',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if ((field["required"] ?? false) && (value == null || value.isEmpty)) {
+                          return "${field["field_label"] ?? field["field_name"]} is required";
+                        }
+                        return null;
+                      },
+                    ),
+                  )),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: submitCredentials,
+                child: Text("Connect"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -151,4 +121,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
     );
   }
 }
+
+
+
 
