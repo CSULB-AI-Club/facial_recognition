@@ -5,11 +5,13 @@ import 'package:facial_recognition/pages/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:facial_recognition/pages/home.dart';
 // import 'package:eyeblinkdetectface/index.dart';
 
 class FaceSetup  extends StatefulWidget{
   final String uid;
-  const FaceSetup({super.key, required this.uid});
+  final String home_camera;
+  const FaceSetup({super.key, required this.uid, required this.home_camera});
 
 
   @override
@@ -22,13 +24,6 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
   CameraController? cameraController;
   int selectedCameraIndex = 0;
   bool _isCapturingBurst = false;
-  // final bool_isLoading = false;
-  // bool _startWithInfo = true;
-  // bool _allowAfterTimeOut = false;
-  // final List<M7LivelynessStepItem> _verificationSteps = [];
-  // int _timeOutDuration = 60;
-
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -60,7 +55,11 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
       await Future.delayed(Duration(milliseconds: interval));
     }
     setState(() => _isCapturingBurst = false);
-    Navigator.push(context,  MaterialPageRoute(builder: (context) => Camera(uid: widget.uid)));
+    if (widget.home_camera == 'camera') {
+      Navigator.push(context,  MaterialPageRoute(builder: (context) => Camera(uid: widget.uid)));
+    } else {
+      Navigator.push(context,  MaterialPageRoute(builder: (context) => HomePage(uid: widget.uid)));
+    }
   }
 
   Future<void> _uploadImages(File imageFile, String uid, int numEmbeddings) async {
@@ -89,66 +88,10 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
 
   @override
   void initState(){
-    // _initValues();
     super.initState();
     _setupCameraController();
-    // WidgetsBinding.instance.addPostFrameCallback((_){
-    //   detectBlink(context);
-    // });
+   
   }
-
-  // void _initValues(){
-  //   _verificationSteps.addAll(
-  //     [
-  //       M7LivelynessStepItem(
-  //         step: M7LivelynessStep.blink,
-  //         title: '1. Blink',
-  //         isCompleted: false
-  //       ),
-  //       M7LivelynessStepItem(
-  //         step: M7LivelynessStep.blink,
-  //         title: '2. Blink',
-  //         isCompleted: false
-  //       ),
-  //     ]
-  //   );
-  //   Eyeblinkdetectface.instance.configure(
-  //     contourColor: Colors.blue,
-  //     thresholds: [
-  //       M7BlinkDetectionThreshold(
-  //         leftEyeProbability: 0.25,
-  //         rightEyeProbability: 0.25,
-  //       ),
-  //       M7BlinkDetectionThreshold(
-  //         leftEyeProbability: 0.25,
-  //         rightEyeProbability: 0.25,
-  //       ),
-  //     ]
-  //   );
-  // }
-
-  // Future<void> detectBlink(BuildContext context) async {
-  //   final config = M7DetectionConfig(
-  //     steps: [
-  //       M7LivelynessStepItem(
-  //         step: M7LivelynessStep.blink, 
-  //         title: 'Blink', 
-  //         isCompleted: false,)
-  //     ],
-  //     startWithInfoScreen: _startWithInfo,
-  //     maxSecToDetect: _timeOutDuration == 100? 2500: _timeOutDuration,
-  //     allowAfterMaxSec: _allowAfterTimeOut,
-  //     captureButtonColor: Colors.red,
-  //     );
-  //     final String? response = await Eyeblinkdetectface.instance.detectLivelyness(
-  //       context, 
-  //       config: config);
-      
-  //     if (response != null){
-  //       print("Detected blinking, snapping pictures.");
-  //       _captureBurstPhotos(3, 10);
-  //     }
-  // }
 
   @override
   Widget build(BuildContext context){

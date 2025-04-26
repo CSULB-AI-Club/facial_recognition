@@ -21,14 +21,14 @@ class HomePage extends StatelessWidget{
     // Simulate a network call to activate the ticket
     // DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     // var detection = userDoc.data()?['detection'] ?? false;
-    // await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 1));
     FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'detection': true,
-      });
+      'detection': true,
+    });
       await Future.delayed(Duration(seconds: 15));
-      FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'detection': false,
-      });
+    FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'detection': false,
+    });
     // Here you would typically call your activation function
     // For example:
     // await activateTicket(ticketId);
@@ -87,7 +87,7 @@ class HomePage extends StatelessWidget{
                           await Future.delayed(Duration(seconds: 1));
                           // Here you would typically call your activation function
                           // For example:
-                          
+                          activateTicket();
                           setState(() {
                             isLoading = false;
                           });
@@ -321,7 +321,7 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
             if (value == 1){
               Navigator.of(context).push(
                 MaterialPageRoute(
-                builder: (context) => FaceSetup(uid: uid)));
+                builder: (context) => FaceSetup(uid: uid, home_camera: 'camera')));
             }
             if (value == 2){
               Navigator.of(context).push(

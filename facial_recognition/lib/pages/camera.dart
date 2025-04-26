@@ -60,7 +60,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     try{
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://127.0.0.1:5001/detection')
+        Uri.parse('http://192.0.0.2:5001/detection')
       );
 
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
