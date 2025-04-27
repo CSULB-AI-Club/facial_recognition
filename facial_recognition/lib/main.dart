@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: FaceSetup(uid: "S08V3BiGm7hrpvxvjwnnjfcjUyn2", home_camera: "home"), // Change to your desired initial page
+      home: LogIn(), // Change to your desired initial page
     );
   }
 }
