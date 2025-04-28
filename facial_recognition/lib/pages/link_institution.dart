@@ -17,7 +17,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
   final Map<String, TextEditingController> _controllers = {};
   final _formKey = GlobalKey<FormState>();
 
-  final String backendUrl = "http://192.168.1.66:5001";
+  final String backendUrl = "http://127.0.0.1:5001";
 
   late final String matchedUserId; // <-- this will be assigned in initState
 
@@ -25,7 +25,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
   void initState() {
     super.initState();
     matchedUserId = FirebaseAuth.instance.currentUser!.uid; // Always use logged-in user
-
+    print(matchedUserId);
     final fields = widget.institution["login_requirements"] ?? [];
     for (var field in fields) {
       _controllers[field["field_name"]] = TextEditingController();
@@ -40,18 +40,19 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
 
   Future<void> submitCredentials() async {
     if (!_formKey.currentState!.validate()) return;
-
     final credentials = {
       for (var key in _controllers.keys) key: _controllers[key]!.text
     };
-
+    print(matchedUserId);
+    print(widget.institution["institution_id"]);
     final response = await http.post(
       Uri.parse('$backendUrl/link_institution_account'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        "user_id": matchedUserId,
+        "uid": matchedUserId,
         "institution_id": widget.institution["institution_id"],
         "credentials": credentials,
+        "institution_name": widget.institution["name"],
       }),
     );
 

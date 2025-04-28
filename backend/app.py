@@ -113,12 +113,12 @@ def link_institution_account():
     # Get institution details including login requirements
     institution_data = inst.to_dict()
     login_requirements = institution_data.get("login_requirements", [])
-    
+    print(login_requirements)
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
-        if field.get("required", False) and field["field_label"] not in credentials:
-            missing_fields.append(field["field_label"])
+        if field.get("required", False) and field["field_name"] not in credentials:
+            missing_fields.append(field["field_name"])
     
     if missing_fields:
         return jsonify({
@@ -968,7 +968,10 @@ def unlink_institution():
         .where("user_id", "==", user_id)\
         .where("institution_id", "==", institution_id)\
         .get()
-
+    
+    ticket_links = db.collection("tickets").where("user_id", "==", user_id).where("institution_id", "==", institution_id).get()
+    for link in ticket_links:
+        link.reference.delete()
     for link in links:
         link.reference.delete()
 

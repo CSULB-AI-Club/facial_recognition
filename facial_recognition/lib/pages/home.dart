@@ -195,11 +195,11 @@ class HomePage extends StatelessWidget{
                         final bDate = (b.data() as Map<String, dynamic>)['status'] ?? '';
                         int TicketSort(String status){
                           switch(status){
-                            case 'Active':
+                            case 'active':
                               return 0;
-                            case 'Upcoming':
+                            case 'upcoming':
                               return 1;
-                            case 'Expired':
+                            case 'expired':
                               return 2;
                             default:
                               return 3;
@@ -235,7 +235,7 @@ class HomePage extends StatelessWidget{
         
   }
 Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
-  bool isDisabled = (status == 'Expired' || status == 'Upcoming');
+  bool isDisabled = (status == 'expired' || status == 'upcoming');
   return Container(
     margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
     width: double.infinity,
