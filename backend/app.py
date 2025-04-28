@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from firebase_config import db  # Ensure you have firebase_config.py set up with Firestore
 import uuid  # To generate a unique user ID

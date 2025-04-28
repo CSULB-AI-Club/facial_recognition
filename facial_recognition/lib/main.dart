@@ -1,8 +1,10 @@
+import 'package:facial_recognition/pages/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:facial_recognition/pages/login.dart';
-import 'package:facial_recognition/pages/face_setup.dart';
 import 'firebase_options.dart';
+import 'package:facial_recognition/pages/home.dart';
+import 'package:facial_recognition/pages/face_setup.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +23,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: LogIn(), // Change to your desired initial page
+      //home: LogIn(),
+      home: BlinkeyReveal(),
     );
   }
 }

@@ -1,8 +1,9 @@
-import 'package:facial_recognition/pages/connections_page.dart';
+
+import 'package:facial_recognition/pages/institution_page.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:facial_recognition/pages/institutions_page.dart';
+
 
 class SettingsPage extends StatelessWidget {
   final String uid;
@@ -13,6 +14,38 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double myWidth = MediaQuery.sizeOf(context).width;
     double myHeight = MediaQuery.sizeOf(context).height;
+
+    void _showLogoutDialog(BuildContext context) {
+      showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: Text("Log Out"),
+        content: Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close the dialog
+            },
+          ),
+          TextButton(
+            child: Text("Log Out", style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close the dialog
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LogIn()),
+                (route) => false, // Clear navigation stack
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
     return Scaffold(
       appBar: AppBar(
@@ -34,10 +67,11 @@ class SettingsPage extends StatelessWidget {
             SizedBox(height: myHeight * 0.02),
             Column(
               children: [
-                settingOption('Connections', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage(uid: uid)))),
-                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => ConnectionsPage(uid: uid)))),
-                settingOption('Connect to Institution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionsPage(uid: uid)))),
-                settingOption('Log Out', Icons.exit_to_app, context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
+                settingOption('Profile', Icons.person, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionPage()))),
+                settingOption('Privacy & Security', Icons.lock, context,() => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionPage()))),
+                settingOption('Connect to Insitution', Icons.connect_without_contact , context, () => Navigator.push(context, MaterialPageRoute(builder: (context) => InstitutionPage()))),
+                settingOption('Log Out', Icons.exit_to_app, context, () => _showLogoutDialog (context), isLogout: true,),
+                //Navigator.push(context, MaterialPageRoute(builder: (context) => LogIn())), isLogout: true),
               ],
             ),
           ],
