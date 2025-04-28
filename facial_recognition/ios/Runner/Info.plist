@@ -3,12 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>We use the camera for authentication and profile setup.</string>
-
+		<string>Let us use camera!</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We use the microphone for voice-related features.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We use your photo library to let you upload profile pictures.</string>
+		<string>Let us use your Microphone</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -52,5 +49,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
 </dict>
 </plist>
