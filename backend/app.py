@@ -954,6 +954,26 @@ def match_face():
             "message": "Could not match face to any active tickets"
         }), 404
 
+@app.route("/unlink_institution", methods=["POST"])
+def unlink_institution():
+    data = request.json
+    user_id = data.get("user_id")
+    institution_id = data.get("institution_id")
+
+    if not user_id or not institution_id:
+        return jsonify({"error": "Missing user_id or institution_id"}), 400
+
+    # Delete matching link from user_institutions
+    links = db.collection("user_institutions")\
+        .where("user_id", "==", user_id)\
+        .where("institution_id", "==", institution_id)\
+        .get()
+
+    for link in links:
+        link.reference.delete()
+
+    return jsonify({"message": "Institution disconnected"})
+
 
 
 
