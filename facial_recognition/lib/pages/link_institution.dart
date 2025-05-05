@@ -28,7 +28,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
     print(matchedUserId);
     final fields = widget.institution["login_requirements"] ?? [];
     for (var field in fields) {
-      _controllers[field["field_name"]] = TextEditingController();
+      _controllers[field["field_label"]] = TextEditingController();
     }
   }
 
