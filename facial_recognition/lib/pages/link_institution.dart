@@ -17,7 +17,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
   final Map<String, TextEditingController> _controllers = {};
   final _formKey = GlobalKey<FormState>();
 
-  final String backendUrl = "http://192.168.0.163:5001";
+  final String backendUrl = "http://192.168.1.26:5001";
 
   late final String matchedUserId; // <-- this will be assigned in initState
 

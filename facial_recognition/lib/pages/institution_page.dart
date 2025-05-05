@@ -15,7 +15,7 @@ class _InstitutionPageState extends State<InstitutionPage> {
   List<Map<String, dynamic>> _institutions = [];
   bool _isLoading = true;
 
-  final String backendUrl = 'http://192.168.0.163:5001';
+  final String backendUrl = 'http://192.168.1.26:5001';
 
   @override
   void initState() {
