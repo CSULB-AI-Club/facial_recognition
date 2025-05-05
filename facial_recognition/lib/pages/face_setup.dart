@@ -66,7 +66,7 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
     try {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://127.0.0.1:5001/upload'),
+      Uri.parse('http://192.168.0.163:5001/upload'),
     );
     
     request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
