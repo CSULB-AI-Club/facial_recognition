@@ -117,8 +117,8 @@ def link_institution_account():
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
-        if field.get("required", False) and field["field_name"] not in credentials:
-            missing_fields.append(field["field_name"])
+        if field.get("required", False) and field["field_label"] not in credentials:
+            missing_fields.append(field["field_label"])
     
     if missing_fields:
         return jsonify({
