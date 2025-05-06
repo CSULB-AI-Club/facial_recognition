@@ -1,122 +1,416 @@
 //import 'package:facial_recognition/pages/add_ticket.dart';
-import 'package:facial_recognition/pages/camera.dart';
+import 'package:facial_recognition/pages/institution_page.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:facial_recognition/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:facial_recognition/pages/face_setup.dart';
+import 'package:facial_recognition/pages/widgets/hold_button.dart';
+import 'package:flutter/services.dart';
 //import 'package:facial_recognition/models/tickets.dart';
 
 class HomePage extends StatelessWidget{
-  HomePage({super.key});
+  final String uid;
+  const HomePage({super.key, required this.uid});
   //List <Tickets> tickets = [];
+  
 
+  Future<void> activateTicket() async {
+    // Simulate a network call to activate the ticket
+    // DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    // var detection = userDoc.data()?['detection'] ?? false;
+    await Future.delayed(Duration(seconds: 1));
+    FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'detection': true,
+    });
+      await Future.delayed(Duration(seconds: 15));
+    FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'detection': false,
+    });
+    // Here you would typically call your activation function
+    // For example:
+    // await activateTicket(ticketId);
+  }
 
+  void showActivationPopup(BuildContext context, String ticketName, String ticket_description, String status) {
+  showDialog(
+    context: context,
+    barrierDismissible: true, // User must confirm
+    builder: (context) {
+      bool isLoading = false;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text("Activate Ticket", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  ticketName,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  ticket_description,
+                  style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Are you sure you want to activate this ticket?",
+                  style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                isLoading
+                    ? Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 10),
+                          Text("Activating ticket...")
+                        ],
+                      )
+                    : HoldToConfirmButton(
+                        holdDuration: Duration(seconds: 2),
+                        onConfirmed: () async{
+                          setState(() {
+                            isLoading = true;
+                          });
+                          HapticFeedback.mediumImpact();
+                          // Simulate a network call
+                          await Future.delayed(Duration(seconds: 1));
+                          // Here you would typically call your activation function
+                          // For example:
+                          activateTicket();
+                          setState(() {
+                            isLoading = false;
+                          });
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Ticket Activated!", textAlign: TextAlign.center,)),
+                          );
+                        },
+                      ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context){
-    double myWidth = MediaQuery.sizeOf(context).width;
-    double myHeight = MediaQuery.sizeOf(context).height;
-
-
- 
-
+    
     //tickets = Tickets.getTickets();
     return Scaffold(
-        appBar: appBar(context),
-        
+        backgroundColor: const Color.fromARGB(255, 252, 251, 251),
         body: 
-        Container(
-          height: myHeight,
-          width: myWidth,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color.fromRGBO(30, 90, 112, 1),Color.fromRGBO(57, 171, 214, 1)],
-              ),
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-          ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                    EdgeInsets.only(top: 20, left: 15),
-                  child: 
-                      Text('Tickets/Passes:',
-                        style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-              ),
-              ),
-                  ),
-                SizedBox(height: myHeight * 0.02),
-                Column(
-                  children: 
-                [
-                  Align(
-                    alignment: Alignment(0.8,0),
-                  child:ElevatedButton(onPressed: (){}, 
-                  child: Text('Edit')
-                  ),),
-                  SizedBox(height:35),
-                  SizedBox( 
-                  width: myWidth*0.95,
-                  height: myHeight*0.19,
-                  child:ElevatedButton(onPressed: (){
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Camera()));
-                
-              } , 
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20) ),
-                      
-                  ),
-                  child: Text('Ticket 1'),
-                  ),),
-                  SizedBox(height: 30),
-                  SizedBox( 
-                  width: myWidth*0.95,
-                  height: myHeight*0.19,
-                  child:ElevatedButton(onPressed: (){
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Camera()));
-                
-              } ,  
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20) ),
-                  ),
-                  child: Text('Ticket 2'),
-                  ),),
-
-                  SizedBox(height: 30,),
-                  SizedBox( 
-                  width: myWidth*0.95,
-                  height: myHeight*0.19,
-                  child:ElevatedButton(onPressed: (){
-                  Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Camera()));
-                
-              } , 
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                      
-                  ),
-                  child: Text('Ticket 3'),
-                  ),),
-                ],)
-              ],
+        Column(
+          children: [
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData){
+                  return Center(child: CircularProgressIndicator());
+                }
+                final userData = snapshot.data!;
+return Column(
+  children: [
+    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
             ),
+            child: Padding(
+              padding: EdgeInsets.all(5),
+              child: Opacity(
+                opacity: 0.85,
+                child: SvgPicture.asset(
+                  'assets/icons/user_avatar.svg',
+                  fit: BoxFit.cover,
+                ),
               ),
-              );
+            ),
+          ),
+          SizedBox(width: 10),
+          Text(
+            'Welcome, ${userData['first_name']}',
+            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+          ),
+          Spacer(),
+          blinkeyPopUp(context),
+        ],
+      ),
+    ),
+  ],
+);
+
+              }
+            ),
+            //ticketing section for user
+Expanded(
+  child: Container(
+    width: double.infinity,
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          Color.fromRGBO(30, 90, 112, 1),
+          Color.fromRGBO(57, 171, 214, 1)
+        ],
+      ),
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(20),
+        bottomLeft: Radius.circular(20),
+        bottomRight: Radius.circular(20),
+        topRight: Radius.circular(20),
+      ),
+    ),
+    child: StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('tickets')
+          .where("user_id", isEqualTo: uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final tickets = snapshot.data!.docs;
+        if (tickets.isEmpty) {
+          return Center(
+            child: Text(
+              'No Tickets Found',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          );
+        }
+        tickets.sort((a, b) {
+          final aDate = (a.data() as Map<String, dynamic>)['status'] ?? '';
+          final bDate = (b.data() as Map<String, dynamic>)['status'] ?? '';
+          int TicketSort(String status) {
+            switch (status) {
+              case 'active':
+                return 0;
+              case 'upcoming':
+                return 1;
+              case 'expired':
+                return 2;
+              default:
+                return 3;
+            }
+          }
+          return TicketSort(aDate).compareTo(TicketSort(bDate));
+        });
+        return ListView.builder(
+          itemCount: tickets.length,
+          itemBuilder: (context, index) {
+            try {
+              final ticket = tickets[index];
+              final data = ticket.data() as Map<String, dynamic>;
+              final ticket_name = data['name'] ?? 'Unknown Ticket';
+              final ticket_id = data['ticket_id'] ?? 'Unknown Ticket ID';
+              final description = data['description'] ?? 'No description available';
+              final status = data['status'] ?? 'Unknown Status';
+              return ticketObject(ticket_name, context, ticket_id, description, status);
+            } catch (e) {
+              return Center(child: Text('Error loading ticket'));
+            }
+          },
+        );
+      },
+    ),
+  ),
+),
+
+          ],
+        ),
+      );
+
         
   }
+Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
+  bool isDisabled = (status == 'expired' || status == 'upcoming');
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+    width: double.infinity,
+    height: 150,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+    ),
+    child: Material( // Needed to show ripple effect inside decorated container
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: isDisabled ? null: 
+        () {
+          showActivationPopup(context, title, description, status);
+        },
+        child: Row(
+          children: [
+            // Stub on left
+            Container(
+              width: 60,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                ),
+              ),
+            ),
+
+            // Ticket info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDisabled? Colors.grey: Colors.black),),
+                    SizedBox(height: 10),
+                    Text(description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16, color: isDisabled? Colors.grey: Colors.black)),
+                    Text("Status: $status",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDisabled? Colors.grey: Colors.black)),
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+void _showLogoutDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: Text("Log Out"),
+        content: Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close dialog
+            },
+          ),
+          TextButton(
+            child: Text("Log Out", style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close dialog
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LogIn()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+  Padding blinkeyPopUp(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 20),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          popupMenuTheme: PopupMenuThemeData(
+            color: Colors.grey[100],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          )
+        ),
+        child: PopupMenuButton<int>(
+          surfaceTintColor: Colors.white,
+          icon: SvgPicture.asset('assets/icons/hamburger_menu.svg', height: 25, width: 25),
+          onSelected:(value){
+            if (value == 1){
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                builder: (context) => FaceSetup(uid: uid, home_camera: 'camera')));
+            }
+            if (value == 2){
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                builder: (context) => SettingsPage(uid: uid)));
+            }
+            if (value == 3){
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                builder: (context) => InstitutionPage()));
+            }
+            if (value == 4){
+              _showLogoutDialog(context);
+            }
+
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 1,
+              child: ListTile(
+                leading: SvgPicture.asset('assets/icons/face_setup.svg', height: 24, width: 24),
+                title: Text('Setup Face ID'),
+              ),
+            ),
+            PopupMenuItem(
+              value: 2,
+              child: ListTile(
+                leading: SvgPicture.asset('assets/icons/settings.svg', height: 24, width: 24),
+                title: Text('Settings'),
+              ),
+            ),
+            PopupMenuItem(
+              value: 3,
+              child: ListTile(
+                leading: SvgPicture.asset('assets/icons/connect.svg', height: 24, width: 24),
+                title: Text('Connect Institution'),
+              ),
+            ),
+            PopupMenuItem(
+              value: 4,
+              child: ListTile(
+                leading: SvgPicture.asset('assets/icons/logout.svg', height: 24, width: 24),
+                title: Text('Log out'),
+                textColor: Colors.red,
+              ),
+            ),
+          ],
+          ),
+      ),
+    );
+  }
+
 
   AppBar appBar(BuildContext context) {
     return AppBar(
@@ -136,12 +430,20 @@ class HomePage extends StatelessWidget{
             Navigator.of(context).push(
               MaterialPageRoute(
               //builder: (context) => const Settings()),
-              builder: (context) =>  Settings()),
+              builder: (context) =>  SettingsPage(uid: uid)),
             );
           }
-          if (value == 2){
-              _showLogoutDialog(context);
-      
+          // if (value == 2){
+          //   Navigator.of(context).push(
+          //     MaterialPageRoute(
+          //     builder: (context) => const FaceSetup(uid: uid)),
+          //   );
+          // }
+          if (value == 3){
+              Navigator.of(context).push(
+              MaterialPageRoute(
+              builder: (context) => LogIn()),
+            );
           }
         },
         itemBuilder: (context)=>[
@@ -160,7 +462,7 @@ class HomePage extends StatelessWidget{
             ),
           ),
           PopupMenuItem(
-            value: 2,
+            value: 3,
             child: ListTile(
               leading: SvgPicture.asset('assets/icons/logout.svg', height:24, width: 24) ,
               title: Text('Log out'),
@@ -176,35 +478,4 @@ class HomePage extends StatelessWidget{
   }
 
 
-
-      void _showLogoutDialog(BuildContext context) {
-      showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text("Log Out"),
-        content: Text("Are you sure you want to log out?"),
-        actions: [
-          TextButton(
-            child: Text("Cancel"),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close the dialog
-            },
-          ),
-          TextButton(
-            child: Text("Log Out", style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LogIn()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
 }

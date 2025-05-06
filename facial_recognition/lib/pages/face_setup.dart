@@ -1,12 +1,17 @@
 
 import 'package:camera/camera.dart';
+import 'package:facial_recognition/pages/camera.dart';
+// import 'package:eyeblinkdetectface/index.dart';
 import 'package:flutter/material.dart';
-import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:facial_recognition/pages/home.dart';
+// import 'package:eyeblinkdetectface/index.dart';
 
 class FaceSetup  extends StatefulWidget{
-  const FaceSetup({super.key});
+  final String uid;
+  final String home_camera;
+  const FaceSetup({super.key, required this.uid, required this.home_camera});
 
 
   @override
@@ -19,7 +24,6 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
   CameraController? cameraController;
   int selectedCameraIndex = 0;
   bool _isCapturingBurst = false;
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -41,8 +45,8 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
     for (int i = 0; i < count; i++) {
       try {
         XFile picture = await cameraController!.takePicture();
-        File picture_File = File(picture.path);
-        await _uploadImages(File(picture_File.path));
+        File pictureFile = File(picture.path);
+        await _uploadImages(File(pictureFile.path), widget.uid, i);
         print("Burst Photo $i Saved: ${picture.path}");
       } catch (e) {
         print("Error in burst capture: $e");
@@ -51,18 +55,24 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
       await Future.delayed(Duration(milliseconds: interval));
     }
     setState(() => _isCapturingBurst = false);
-    Navigator.pushNamed(context, '/home');
+    if (widget.home_camera == 'camera') {
+      Navigator.push(context,  MaterialPageRoute(builder: (context) => Camera(uid: widget.uid)));
+    } else {
+      Navigator.push(context,  MaterialPageRoute(builder: (context) => HomePage(uid: widget.uid)));
+    }
   }
 
-  Future<void> _uploadImages(File imageFile) async {
+  Future<void> _uploadImages(File imageFile, String uid, int numEmbeddings) async {
     try {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.0.163:5001/upload'),
+      Uri.parse('http://127.0.0.1:5001/upload'),
     );
-
+    
     request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-
+    
+    request.fields['uid'] = uid;
+    request.fields['num_embeddings'] = numEmbeddings.toString();
     var response = await request.send();
 
     if (response.statusCode == 200) {
@@ -80,6 +90,7 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
   void initState(){
     super.initState();
     _setupCameraController();
+   
   }
 
   @override
@@ -124,7 +135,7 @@ Widget _buildUI(){
             child: Container(),
           ),
             IconButton(
-            onPressed: _isCapturingBurst ? null : () => _captureBurstPhotos(3, 100),
+            onPressed: _isCapturingBurst ? null : () => _captureBurstPhotos(3, 0),
             iconSize: 90,
             icon: const Icon(
             Icons.camera,
@@ -145,9 +156,6 @@ Widget _buildUI(){
       
         ],
       ),
-
-
-        
       ],
     ),
   ),

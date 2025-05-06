@@ -72,7 +72,7 @@ class _SigninState extends State<SignUp> {
         print("Sign Up Successful: ${userCredential.user}");
         await userCredential.user?.sendEmailVerification();
         print("Registration Successful. Verification Email Sent.");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => EmailVerify(email: email, password: password)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => EmailVerify(email: email, password: password, first_name: firstname, last_name: lastname)));
       } 
       on FirebaseAuthException catch (e) {
         print("Error: ${e.code}");

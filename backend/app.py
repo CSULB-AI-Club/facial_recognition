@@ -10,9 +10,8 @@ from PIL import Image, ImageOps
 import pandas as pd
 from threading import Event, Thread
 #from sklearn.metrics.pairwise import cosine_similarity
+from firebase_admin import auth
 from datetime import datetime, timedelta
-
-
 
 
 app = Flask(__name__)
@@ -21,9 +20,6 @@ CORS(app)
 #Initialize FaceAnalysis
 #app_face = FaceAnalysis()
 #app_face.prepare(ctx_id=0, det_size=(640, 640))
-
-
-
 ############# NEW FUNCTIONS (Added by Shaun ) ###########
 
 # Set up paths for storing logos
@@ -75,6 +71,8 @@ def add_institution():
         "institution_id": institution_id
     })
 
+# DEV NOTE (KEITH) : this function isn't necessary, there is firebase package that can manage these kinds of task in the frontend.
+
 @app.route("/get_institutions", methods=["GET"])
 def get_institutions():
     """Get all institutions"""
@@ -95,10 +93,10 @@ def link_institution_account():
     """Link a user account to an institution account with custom required fields"""
     data = request.json
 
-    if not data or "user_id" not in data or "institution_id" not in data:
+    if not data or "uid" not in data or "institution_id" not in data:
         return jsonify({"error": "User ID and Institution ID are required"}), 400
     
-    user_id = data["user_id"]
+    user_id = data["uid"]
     inst_id = data["institution_id"]
     credentials = data.get("credentials", {})
 
@@ -115,7 +113,7 @@ def link_institution_account():
     # Get institution details including login requirements
     institution_data = inst.to_dict()
     login_requirements = institution_data.get("login_requirements", [])
-    
+    print(login_requirements)
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
@@ -129,6 +127,7 @@ def link_institution_account():
 
     # In a real app, this is where we'd verify credentials with the institution's API
     # For this mock implementation, we'll just create the link
+    # this unique ID will be for the document ID, so everything is unique, but tied to each other by user_id
     link_id = str(uuid.uuid4())
 
     # Store user-institution link with the provided credentials
@@ -136,6 +135,7 @@ def link_institution_account():
         "link_id": link_id,
         "user_id": user_id,
         "institution_id": inst_id,
+        "institution_name": data["institution_name"],
         "credentials": credentials,  # Store all provided credentials
         "status": "active",
         "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
@@ -149,6 +149,7 @@ def link_institution_account():
         "link_id": link_id
     })
 
+# EDITOR NOTE (KEITH) : this function is also unnecessary 
 @app.route("/get_user_institutions", methods=["POST"])
 def get_user_institutions():
     """Get all institutions linked to a user"""
@@ -594,32 +595,6 @@ def initialize_mock_data():
 
 
 
-
-#############################################
-
-
-
-@app.route("/unlink_institution", methods=["POST"])
-def unlink_institution():
-    data = request.json
-    user_id = data.get("user_id")
-    institution_id = data.get("institution_id")
-
-    if not user_id or not institution_id:
-        return jsonify({"error": "Missing user_id or institution_id"}), 400
-
-    # Delete matching link from user_institutions
-    links = db.collection("user_institutions")\
-        .where("user_id", "==", user_id)\
-        .where("institution_id", "==", institution_id)\
-        .get()
-
-    for link in links:
-        link.reference.delete()
-
-    return jsonify({"message": "Institution disconnected"})
-
-
 @app.route("/create_user", methods=["POST"])
 def create_user():
     data = request.json
@@ -628,42 +603,44 @@ def create_user():
         return jsonify({"error": "Email is required"}), 400
     
     email = data["email"]
-    password = data["password"] # Hash the password
     first_name = data["first_name"]
-    last_name = data["last_name"]
-    user_id = str(uuid.uuid4())  # Generate a unique user ID
-    email_exists = db.collection("users").where("email", "==", email).get()
+    last_name = data["last_name"]  # Generate a unique user ID
+    user_id = data["uid"]
+    email_exists = db.collection("users").where("user_id", "==", user_id).get()
     if email_exists:
         return jsonify({"error": "Email already exists"}), 400
     else:
     # Store user in Firestore
         db.collection("users").document(user_id).set({
-            "user_id": user_id,
             "email": email,
-            "password": password,
             "last_name": last_name,
             "first_name": first_name,
-            "detection" : False
+            "detection" : True,
+            "user_id": user_id,
         })
     return jsonify({"message": "User created successfully", "user_id": user_id})
+
 
 
 @app.route("/authenticate", methods=["POST"])
 def authenticate():
     data = request.json
     print(f"Data: {data}")
-    if not data or "email" not in data:
-        return jsonify({"error": "Email is required"}), 400
-    email = data["email"]
-    password = data["password"] # Hash the password
-    user = db.collection("users").where("email", "==", email).where("password", "==", password).get()
+    if not data:
+        return jsonify({"error": "No data"}), 400
+    user_id = data["uid"]
+    user = db.collection("users").where("user_id", "==", user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
     else:
-        return jsonify({"message": "User authenticated successfully"}), 200
-    
+        try:
+            custom_token = auth.create_custom_token(user_id)
+        except Exception as e:
+            print(f"Error authenticating user: {e}")
+            return jsonify({"error": "Authentication failed"}), 500
+        return jsonify({"message": "User authenticated successfully", "token": custom_token.decode("utf-8")}), 200
 
-"""""
+
 @app.route("/upload", methods=["POST"])
 def upload():
     print("Receiving file...")
@@ -671,11 +648,10 @@ def upload():
         return jsonify({"error": "File is required"}), 400
     
     file = request.files['image']
-    email = request.form.get("email")
-    password = request.form.get("password")
+    uid = request.form.get("uid")
     num_embeddings = request.form.get("num_embeddings")
     embedding_string = "Embedding" + num_embeddings
-    user = db.collection("users").where("email", "==", email).where("password", "==", password).get()
+    user = db.collection("users").where("user_id", "==", uid).get()
 
     user_doc = user[0].reference
     if file.filename == '':
@@ -683,7 +659,7 @@ def upload():
     
 
     #save file to the upload folder
-    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename) #file path shouldn't be hard coded
+    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename)
     file.save(file_path)
     embedding = get_embeddings(file_path).tolist()
 
@@ -693,9 +669,8 @@ def upload():
         embedding_string: embedding
     })
 
-    return jsonify({"message": "File uploaded successfully"}), 200
-    """
-"""""
+    return jsonify({"message": "Face Embeddings uploaded successfully"}), 200
+
 def get_embeddings(file_path):
     try:
         img = Image.open(file_path)
@@ -716,20 +691,19 @@ def get_embeddings(file_path):
         return None
 
     return embedding
-"""
+
 
 @app.route("/detection", methods=["POST"])
 def detection():
     print("Receiving file...")
     #using distance based classification
     file = request.files['image']
-    email = request.form["email"]
-    password = request.form["password"]
-    user = db.collection("users").where("email", "==", email).where("password", "==", password).get()
+    uid = request.form.get("uid")
+    user = db.collection("users").where("user_id", "==", uid).get()
     user_doc = user[0]
     user_data = user_doc.to_dict()
     print(user_data.get("detection"))
-    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename)  # the File Path shouldn't be hard coded
+    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename)
     file.save(file_path)
     #really rough function to just to see if functionality even works
     if user_data.get("detection") == True:
@@ -737,24 +711,275 @@ def detection():
         embedding_2 = np.array(user_data.get("Embedding1"))
         embedding_3 = np.array(user_data.get("Embedding2"))
         embedding_mean = np.mean([embedding_1, embedding_2, embedding_3], axis=0)
+        print("Embedding mean sample: ", embedding_mean[:5])
         #retrieve embeddings from the incoming photo file
         embedding = np.array(get_embeddings(file_path))
         if embedding is None:
             return jsonify({"error": "No face found in the image"}), 403
         #calculate cosine similarity
         similarity = cosine_similarity([embedding], [embedding_mean]).flatten()[0]
-        print(f"similarity: {similarity}")
+        print(f"similarity/confidence between embedding and mean from profile: {similarity}")
         if similarity > 0.6:
             user_doc.reference.update({
                 "detection": False
             })
+            print("User Face is detected, authorizing entry...")
             return jsonify({"message": "User detected"}), 200
         else:
+            user_doc.reference.update({
+                "detection": False
+            })
             return jsonify({"message": "User not detected"}), 400
         
     else:
         return jsonify({"error": "Ticket is inactive. Try Again"}), 400
+
+
+#For Institution Login Page
+@app.route("/institution_login", methods=["POST"])
+def institution_login():
+    """Login for institutions"""
+    data = request.json
+
+    if not data or "email" not in data or "password" not in data:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    email = data["email"]
+    password = data["password"]
+
+    institution_query = db.collection("institutions").where("email", "==", email).get()
+
+    if not institution_query:
+        return jsonify({"error": "Invalid email or password"}), 401
+
+    institution = institution_query[0].to_dict()
+
+    if institution.get("password") != password:
+        return jsonify({"error": "Invalid email or password"}), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "institution_id": institution.get("institution_id"),
+        "institution_name": institution.get("name")
+    })
+
+# Gets all tickets with status upcoming or active (for home page)
+@app.route("/get_home_tickets", methods=["POST"])
+def get_institution_tickets():
+    """Get all tickets linked to an institution"""
+    data = request.json
+
+    if not data or "institution_id" not in data:
+        return jsonify({"error": "Institution ID is required"}), 400
+
+    institution_id = data["institution_id"]
+
+    tickets_query = db.collection("tickets").where("institution_id", "==", institution_id).stream()
     
+    tickets = []
+    for ticket in tickets_query:
+        ticket_data = ticket.to_dict()
+        if ticket_data.get("status") in ["active", "upcoming"]:
+            tickets.append({
+                "ticket_id": ticket_data.get("ticket_id"),
+                "name": ticket_data.get("name"),
+                "description": ticket_data.get("description"),
+                "institution_id": ticket_data.get("institution_id"),
+                "user_id": ticket_data.get("user_id"),
+                "link_id": ticket_data.get("link_id"),
+                "status": ticket_data.get("status"),
+                "created_at": ticket_data.get("created_at"),
+                "last_accessed": ticket_data.get("last_accessed"),
+                "accessed_count": ticket_data.get("accessed_count"),
+                "valid_from": ticket_data.get("valid_from"),
+                "valid_until": ticket_data.get("valid_until"),
+            })
+
+    return jsonify({"tickets": tickets})
+
+# Gets all used tickets (for seperate page)
+@app.route("/get_used_tickets", methods=["POST"])
+def get_used_tickets():
+    """Get all tickets linked to an institution"""
+    data = request.json
+
+    if not data or "institution_id" not in data:
+        return jsonify({"error": "Institution ID is required"}), 400
+
+    institution_id = data["institution_id"]
+
+    tickets_query = db.collection("tickets").where("institution_id", "==", institution_id).stream()
+
+    tickets = []
+    for ticket in tickets_query:
+        ticket_data = ticket.to_dict()
+        if ticket_data.get("status") == "used":
+            tickets.append({
+                "ticket_id": ticket_data.get("ticket_id"),
+                "name": ticket_data.get("name"),
+                "description": ticket_data.get("description"),
+                "institution_id": ticket_data.get("institution_id"),
+                "user_id": ticket_data.get("user_id"),
+                "link_id": ticket_data.get("link_id"),
+                "status": ticket_data.get("status"),
+                "created_at": ticket_data.get("created_at"),
+                "last_accessed": ticket_data.get("last_accessed"),
+                "accessed_count": ticket_data.get("accessed_count"),
+                "valid_from": ticket_data.get("valid_from"),
+                "valid_until": ticket_data.get("valid_until"),
+            })
+
+    return jsonify({"tickets": tickets})
+
+# changes an active ticket to a used ticket
+def use_ticket(ticket_id):
+    """Mark an active ticket as used"""
+    print("Marking ticket as used...")
+    ticket_ref = db.collection("tickets").document(ticket_id)
+    ticket = ticket_ref.get()
+
+    if not ticket.exists:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    ticket_data = ticket.to_dict()
+
+    if ticket_data.get("status") != "Active":
+        return jsonify({"error": "Ticket is not active"}), 400
+
+    # Update the status to "used"
+    ticket_ref.update({
+        "status": "used",
+        "last_accessed": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "accessed_count": ticket_data.get("accessed_count", 0) + 1
+    })
+
+    return jsonify({"message": "Ticket marked as used"})
+
+
+#### THIS BOTTOM PORTION IS FOR FACE MATCHING ####
+# So when the user blinks, it sends the image to this endpoint
+import os
+from werkzeug.utils import secure_filename
+
+# where we’ll temporarily store incoming photos for matching
+IMAGE_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+os.makedirs(IMAGE_UPLOAD_FOLDER, exist_ok=True)
+
+@app.route("/match_face", methods=["POST"])
+def match_face():
+    """
+    Given an image and institution_id, 
+    find any 'active' ticket-holder whose stored face embeddings
+    match the submitted photo within a cosine‐similarity threshold.
+    """
+    # 1) Validate inputs
+    if 'image' not in request.files or 'institution_id' not in request.form:
+        return jsonify({"error": "Both 'image' file and 'institution_id' are required"}), 400
+
+    img_file = request.files['image']
+    inst_id = request.form['institution_id']
+ 
+    # Change this as needed
+    threshold = 0.1
+
+    # 2) Save incoming image to disk
+    filename = secure_filename(img_file.filename)
+    file_path = os.path.join(IMAGE_UPLOAD_FOLDER, filename)
+    img_file.save(file_path)
+
+    # 3) Compute embedding of the submitted photo
+    query_emb = np.array(get_embeddings(file_path))
+    if query_emb is None:
+        return jsonify({"error": "No face detected in submitted image"}), 400
+
+    # 4) Fetch all 'active' tickets for this institution
+    tickets = list(db.collection("tickets") \
+                .where("institution_id", "==", inst_id) \
+                .where("status", "==", "Active") \
+                .stream())
+    user_ids = {t.to_dict().get("user_id") for t in tickets}
+
+    if not user_ids:
+        return jsonify({"error": "No active tickets found for this institution"}), 404
+
+    # 5) Load each user’s stored embeddings
+    user_matches = {}
+    for uid in user_ids:
+        udoc = db.collection("users").document(uid).get()
+        if not udoc.exists:
+            continue
+        udata = udoc.to_dict()
+        # collect all keys like 'Embedding0', 'Embedding1', …
+        embeddings = [
+            np.array(udata[k]) for k in udata.keys() if k.startswith("Embedding")
+        ]
+        if embeddings:
+            user_matches[uid] = np.mean(embeddings, axis=0)
+
+    if not user_matches:
+        return jsonify({"error": "No stored embeddings for any active-ticket users"}), 404
+
+    # 6) Compute cosine-similarities
+    best_uid, best_score = None, 0.0
+    for uid, embs in user_matches.items():
+        sims = cosine_similarity([query_emb], [embs]).flatten()[0]
+        top = float(np.max(sims))
+        if top > best_score:
+            best_score, best_uid = top, uid
+        print(f"User ID: {uid}, Similarity: {sims}") 
+    
+    
+    print(f"Best Score: {best_score}")
+    # 7) Check threshold and respond
+    if best_score >= threshold:
+        user = db.collection("users").where("user_id", "==", uid).get()
+        user_doc = user[0]
+        user_data = user_doc.to_dict()
+        user_info = {
+            "user_id": best_uid,
+            "first_name": user_data["first_name"],
+            "last_name":  user_data["last_name"],
+            "email":      user_data["email"]
+        }
+        ticket_id = str([t.to_dict().get("ticket_id") for t in tickets if t.to_dict().get("user_id") == best_uid][0])
+        print(ticket_id)
+        use_ticket(ticket_id)
+        return jsonify({
+            "message": f"Match found: {user_info['first_name']} {user_info['last_name']}",
+            "similarity": best_score,
+            "user": user_info
+        }), 200
+    else:
+        return jsonify({
+            "message": "Could not match face to any active tickets"
+        }), 404
+
+@app.route("/unlink_institution", methods=["POST"])
+def unlink_institution():
+    data = request.json
+    user_id = data.get("user_id")
+    institution_id = data.get("institution_id")
+
+    if not user_id or not institution_id:
+        return jsonify({"error": "Missing user_id or institution_id"}), 400
+
+    # Delete matching link from user_institutions
+    links = db.collection("user_institutions")\
+        .where("user_id", "==", user_id)\
+        .where("institution_id", "==", institution_id)\
+        .get()
+    
+    ticket_links = db.collection("tickets").where("user_id", "==", user_id).where("institution_id", "==", institution_id).get()
+    for link in ticket_links:
+        link.reference.delete()
+    for link in links:
+        link.reference.delete()
+
+    return jsonify({"message": "Institution disconnected"})
+
+
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

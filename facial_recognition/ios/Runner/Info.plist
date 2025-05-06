@@ -2,13 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCameraUsageDescription</key>
-	<string>We use the camera for authentication and profile setup.</string>
-
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We use the microphone for voice-related features.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We use your photo library to let you upload profile pictures.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -33,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Let us use camera!</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Let us use your Microphone</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

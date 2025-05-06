@@ -1,9 +1,11 @@
+import 'package:facial_recognition/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:facial_recognition/pages/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:rive/rive.dart';
-
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -11,12 +13,13 @@ class LogIn extends StatefulWidget {
   @override
   _LogInState createState() => _LogInState();
 }
+
 class _LogInState extends State<LogIn> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   String emailError = '';
   String passwordError = '';
-  Future<void> signIn() async{
+  Future<void> signIn() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
     setState(() {
@@ -24,29 +27,43 @@ class _LogInState extends State<LogIn> {
       passwordError = '';
     });
 
-    if(email.isEmpty){
+    if (email.isEmpty) {
       setState(() {
         emailError = 'Please enter an email';
       });
     }
-    if(password.isEmpty){
+    if (password.isEmpty) {
       setState(() {
         passwordError = 'Please enter a password';
       });
     }
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       User? user = FirebaseAuth.instance.currentUser;
-
-      if(user != null){
-        print("Login Successful");
-        Navigator.pushNamed(context, '/home');
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:5001/authenticate'),
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, String>{"uid": user!.uid}),
+      );
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        String token = data['token'];
+        await FirebaseAuth.instance.signInWithCustomToken(token);
+        print("Sign in Successful");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(uid: user.uid)),
+        );
       }
-    }
-    on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e) {
       print("Error: ${e.code}");
-      if(e.code == 'user-not-found' || e.code == 'invalid-credential' || e.code == 'invalid-email'){
+      if (e.code == 'user-not-found' ||
+          e.code == 'invalid-credential' ||
+          e.code == 'invalid-email') {
         print("Email or password is invalid");
         setState(() {
           emailError = 'email or password is invalid';
@@ -62,7 +79,7 @@ class _LogInState extends State<LogIn> {
       color: Colors.white,
       child: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, 
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SizedBox(height: 200),
             Row(
@@ -70,23 +87,24 @@ class _LogInState extends State<LogIn> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                width: 80,
-                height: 80,
-                child: RiveAnimation.asset('assets/icons/eye_animation.riv', 
-                fit: BoxFit.contain,
+                  width: 80,
+                  height: 80,
+                  child: RiveAnimation.asset(
+                    'assets/icons/eye_animation.riv',
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-            SizedBox(
-              width: 10
+                SizedBox(width: 10),
+                Text(
+                  "Blinkey",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            Text("Blinkey",
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 40,
-              fontWeight: FontWeight.bold
-            ),),
-          ],
-        ),
             Padding(
               padding: EdgeInsets.only(top: 20, left: 20, right: 20),
               //EMAIL TEXTFIELD
@@ -97,23 +115,24 @@ class _LogInState extends State<LogIn> {
                   border: OutlineInputBorder(),
                   labelText: 'Email',
                   hintText: 'Enter E-mail',
-                  labelStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
-                  hintStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
-                  prefixIcon: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: SvgPicture.asset('assets/icons/mail.svg')),
+                  labelStyle: TextStyle(
+                    color: Colors.black.withValues(alpha: .3),
                   ),
-                )
-              )
-            ),
-            if(emailError.isNotEmpty)
-              SizedBox(height: 5),
-              Text(
-                emailError,
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                  hintStyle: TextStyle(
+                    color: Colors.black.withValues(alpha: .3),
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: SvgPicture.asset('assets/icons/mail.svg'),
+                    ),
+                  ),
+                ),
               ),
+            ),
+            if (emailError.isNotEmpty) SizedBox(height: 5),
+            Text(emailError, style: TextStyle(color: Colors.red, fontSize: 12)),
             Padding(
               //PASSWORD TEXTFIELD
               padding: EdgeInsets.only(top: 10, left: 20, right: 20),
@@ -125,37 +144,42 @@ class _LogInState extends State<LogIn> {
                   border: OutlineInputBorder(),
                   labelText: 'Password',
                   hintText: 'Enter Password',
-                  labelStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
-                  hintStyle: TextStyle(color: Colors.black.withValues(alpha: .3)),
-                  prefixIcon: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: SvgPicture.asset('assets/icons/key.svg')),
+                  labelStyle: TextStyle(
+                    color: Colors.black.withValues(alpha: .3),
                   ),
-                )
-              )
-            ),
-            if(passwordError.isNotEmpty)
-              SizedBox(height: 5),
-              Text(
-                passwordError,
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                  hintStyle: TextStyle(
+                    color: Colors.black.withValues(alpha: .3),
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: SvgPicture.asset('assets/icons/key.svg'),
+                    ),
+                  ),
+                ),
               ),
+            ),
+            if (passwordError.isNotEmpty) SizedBox(height: 5),
+            Text(
+              passwordError,
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
             SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(width: 25),
                 GestureDetector(
-                  onTap:() => print("Forgot Password"),
-                  child: 
-                    Text("Forgot your password?", style: TextStyle(
-                    color: Color(0xff9F1FFF),
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    
-                  ))
+                  onTap: () => print("Forgot Password"),
+                  child: Text(
+                    "Forgot your password?",
+                    style: TextStyle(
+                      color: Color(0xff9F1FFF),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -166,34 +190,44 @@ class _LogInState extends State<LogIn> {
                 height: 60,
                 width: 200,
                 decoration: BoxDecoration(
-                    color: Color(0xff9F1FFF),
-                    border: Border.all(
-                      color: Color.fromARGB(255, 192, 113, 253),
-                      width: 5
-                    ),
-                    borderRadius: BorderRadius.circular(10),
+                  color: Color(0xff9F1FFF),
+                  border: Border.all(
+                    color: Color.fromARGB(255, 192, 113, 253),
+                    width: 5,
                   ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Center(
-                  child: Text("Log In", style: TextStyle(
-                    color: Colors.white, 
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold
-                    ))
+                  child: Text(
+                    "Log In",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
             SizedBox(height: 5),
             GestureDetector(
-              onTap:() => Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp())),
-              child: Text("Create an Account", style: TextStyle(
-                color: Color(0xff9F1FFF),
-                fontSize: 15,
-                fontWeight: FontWeight.bold
-              ))
-            )
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignUp()),
+                  ),
+              child: Text(
+                "Create an Account",
+                style: TextStyle(
+                  color: Color(0xff9F1FFF),
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 }

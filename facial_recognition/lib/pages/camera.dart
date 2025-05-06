@@ -1,10 +1,15 @@
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:gal/gal.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:facial_recognition/pages/home.dart';
+
+
 
 class Camera  extends StatefulWidget{
-  const Camera({super.key});
+  final String uid;
+  const Camera({super.key, required this.uid});
 
 
   @override
@@ -36,6 +41,42 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     super.initState();
     _setupCameraController();
   }
+  Future<void> _captureFace()async{
+    if (cameraController == null || cameraController?.value.isInitialized == false) {
+      return;
+    }
+    try{
+      XFile picture = await cameraController!.takePicture();
+      File pictureFile = File(picture.path);
+      await _detectFace(File(pictureFile.path), 'keithnatakusuma@yahoo.com', 'richard2005');
+      print("Detected Face: ${picture.path}");
+    }
+    catch(e){
+      print("Error in face detection: $e");
+    }
+  }
+  
+  Future<void> _detectFace(File imageFile, String email, String password) async{
+    try{
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://192.168.1.66:5001/detection')
+      );
+
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+      request.fields['uid'] = widget.uid;
+      var response = await request.send();  
+      if (response.statusCode == 200) {
+        print("Face detection successful");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(uid: widget.uid)));
+      } else {
+        print("Face detection failed with status code: ${response.statusCode}");
+      }
+    }
+    catch(e){
+      print("Error in face detection: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context){
@@ -50,6 +91,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
   );
 
 }
+
 Widget _buildUI(){
   if (cameraController == null || cameraController?.value.isInitialized == false){
     return const Center(child: CircularProgressIndicator(),);
@@ -79,11 +121,7 @@ Widget _buildUI(){
             child: Container(),
           ),
             IconButton(
-            onPressed: () async{
-              XFile picture = await cameraController!.takePicture();
-              Gal.putImage(picture.path);
-              
-            },
+            onPressed: () => _captureFace(),
             iconSize: 90,
             icon: const Icon(
             Icons.camera,
