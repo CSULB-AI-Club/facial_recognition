@@ -24,6 +24,7 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
   CameraController? cameraController;
   int selectedCameraIndex = 0;
   bool _isCapturingBurst = false;
+  String backendUrl = 'http://192.168.0.54:5001';
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {

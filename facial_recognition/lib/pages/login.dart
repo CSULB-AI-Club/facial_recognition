@@ -20,6 +20,7 @@ class _LogInState extends State<LogIn> {
   final TextEditingController passwordController = TextEditingController();
   String emailError = '';
   String passwordError = '';
+  String backendUrl = 'http://192.168.0.54:5001';
   Future<void> signIn() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
