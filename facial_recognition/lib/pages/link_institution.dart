@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Important
 import 'dart:convert';
 
@@ -16,7 +17,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
   final Map<String, TextEditingController> _controllers = {};
   final _formKey = GlobalKey<FormState>();
 
-  final String backendUrl = "http://127.0.0.1:5001";
+  final String backendUrl = "http://192.168.1.26:5001";
 
   late final String matchedUserId; // <-- this will be assigned in initState
 
@@ -27,7 +28,7 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
     print(matchedUserId);
     final fields = widget.institution["login_requirements"] ?? [];
     for (var field in fields) {
-      _controllers[field["field_name"]] = TextEditingController();
+      _controllers[field["field_label"]] = TextEditingController();
     }
   }
 

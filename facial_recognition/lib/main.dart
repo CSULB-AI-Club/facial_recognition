@@ -1,6 +1,8 @@
 import 'package:facial_recognition/pages/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:facial_recognition/pages/login.dart';
+import 'package:flutter/services.dart';
 import 'firebase_options.dart';
 
 void main() async{
@@ -8,6 +10,7 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 

@@ -3,13 +3,13 @@ from flask_cors import CORS
 from firebase_config import db  # Ensure you have firebase_config.py set up with Firestore
 import uuid  # To generate a unique user ID
 import os
-#import insightface
-#from insightface.app import FaceAnalysis
+import insightface
+from insightface.app import FaceAnalysis
 import numpy as np
 from PIL import Image, ImageOps
 import pandas as pd
 from threading import Event, Thread
-#from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity
 from firebase_admin import auth
 from datetime import datetime, timedelta
 
@@ -18,8 +18,8 @@ app = Flask(__name__)
 CORS(app)
 
 #Initialize FaceAnalysis
-#app_face = FaceAnalysis()
-#app_face.prepare(ctx_id=0, det_size=(640, 640))
+app_face = FaceAnalysis()
+app_face.prepare(ctx_id=0, det_size=(640, 640))
 ############# NEW FUNCTIONS (Added by Shaun ) ###########
 
 # Set up paths for storing logos
@@ -117,8 +117,8 @@ def link_institution_account():
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
-        if field.get("required", False) and field["field_name"] not in credentials:
-            missing_fields.append(field["field_name"])
+        if field.get("required", False) and field["field_label"] not in credentials:
+            missing_fields.append(field["field_label"])
     
     if missing_fields:
         return jsonify({

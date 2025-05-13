@@ -45,7 +45,7 @@ class _LogInState extends State<LogIn> {
       );
       User? user = FirebaseAuth.instance.currentUser;
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/authenticate'),
+        Uri.parse('http://192.168.1.26:5001/authenticate'),
         headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode(<String, String>{"uid": user!.uid}),
       );

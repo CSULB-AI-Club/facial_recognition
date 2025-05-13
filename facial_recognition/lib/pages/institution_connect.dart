@@ -22,7 +22,7 @@ class _InstitutionConnectState extends State<InstitutionConnect> {
       credentials_str[key] = value.text.trim();
     });
     final response = await http.post(
-          Uri.parse('http://127.0.0.1:5001/link_institution_account'),
+          Uri.parse('http://192.168.0.163:5001/link_institution_account'),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },
