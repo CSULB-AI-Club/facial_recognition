@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:rive/rive.dart';
+import 'package:facial_recognition/config/api_config.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -45,7 +46,7 @@ class _LogInState extends State<LogIn> {
       );
       User? user = FirebaseAuth.instance.currentUser;
       final response = await http.post(
-        Uri.parse('http://192.168.1.66:5001/authenticate'),
+        Uri.parse(ApiConfig.getUrl('authenticate')),
         headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode(<String, String>{"uid": user!.uid}),
       );

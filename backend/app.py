@@ -110,6 +110,7 @@ def link_institution_account():
     if not inst.exists:
         return jsonify({"error": "Institution not found"}), 404
     
+    
     # Get institution details including login requirements
     institution_data = inst.to_dict()
     login_requirements = institution_data.get("login_requirements", [])
@@ -125,6 +126,7 @@ def link_institution_account():
             "error": f"Missing required credentials: {', '.join(missing_fields)}"
         }), 400
 
+    inst_name = institution_data.get("name", [])
     # In a real app, this is where we'd verify credentials with the institution's API
     # For this mock implementation, we'll just create the link
     # this unique ID will be for the document ID, so everything is unique, but tied to each other by user_id
@@ -135,7 +137,7 @@ def link_institution_account():
         "link_id": link_id,
         "user_id": user_id,
         "institution_id": inst_id,
-        "institution_name": data["institution_name"],
+        "institution_name": inst_name,
         "credentials": credentials,  # Store all provided credentials
         "status": "active",
         "linked_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
@@ -203,7 +205,7 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Access to all Disney World parks",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "upcoming"
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -211,7 +213,7 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Skip the lines with VIP access",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=2)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "upcoming"
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -659,7 +661,7 @@ def upload():
     
 
     #save file to the upload folder
-    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename)
+    file_path = os.path.join("/Users/shaun/facial_recognition/backend/uploads", file.filename)
     file.save(file_path)
     embedding = get_embeddings(file_path).tolist()
 
@@ -703,7 +705,7 @@ def detection():
     user_doc = user[0]
     user_data = user_doc.to_dict()
     print(user_data.get("detection"))
-    file_path = os.path.join("/Users/admin/Desktop/SWE Projects/Flutter Projects/Facial Recognition App/facial_recognition/backend/uploads", file.filename)
+    file_path = os.path.join("/Users/shaun/facial_recognition/backend/uploads", file.filename)
     file.save(file_path)
     #really rough function to just to see if functionality even works
     if user_data.get("detection") == True:

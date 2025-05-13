@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:facial_recognition/config/api_config.dart';
 
 import 'package:facial_recognition/pages/link_institution.dart';
 
@@ -15,8 +16,6 @@ class _InstitutionPageState extends State<InstitutionPage> {
   List<Map<String, dynamic>> _institutions = [];
   bool _isLoading = true;
 
-  final String backendUrl = 'http://192.168.1.66:5001';
-
   @override
   void initState() {
     super.initState();
@@ -25,7 +24,7 @@ class _InstitutionPageState extends State<InstitutionPage> {
 
   Future<void> fetchInstitutions() async {
     try {
-      final response = await http.get(Uri.parse('$backendUrl/get_institutions'));
+      final response = await http.get(Uri.parse(ApiConfig.getUrl('get_institutions')));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -49,7 +48,7 @@ class _InstitutionPageState extends State<InstitutionPage> {
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
     final response = await http.post(
-      Uri.parse('$backendUrl/unlink_institution'),
+      Uri.parse(ApiConfig.getUrl('unlink_institution')),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         "user_id": userId,

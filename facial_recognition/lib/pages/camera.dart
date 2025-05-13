@@ -1,9 +1,9 @@
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:facial_recognition/pages/home.dart';
+import 'package:facial_recognition/config/api_config.dart';
 
 
 
@@ -60,7 +60,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver{
     try{
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.1.66:5001/detection')
+        Uri.parse(ApiConfig.getUrl('detection'))
       );
 
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));

@@ -35,76 +35,185 @@ class HomePage extends StatelessWidget{
   }
 
   void showActivationPopup(BuildContext context, String ticketName, String ticket_description, String status) {
-  showDialog(
-    context: context,
-    barrierDismissible: true, // User must confirm
-    builder: (context) {
-      bool isLoading = false;
-
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text("Activate Ticket", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  ticketName,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                ),
-                SizedBox(height: 10),
-                Text(
-                  ticket_description,
-                  style: TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Are you sure you want to activate this ticket?",
-                  style: TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 20),
-                isLoading
-                    ? Column(
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 10),
-                          Text("Activating ticket...")
-                        ],
-                      )
-                    : HoldToConfirmButton(
-                        holdDuration: Duration(seconds: 2),
-                        onConfirmed: () async{
-                          setState(() {
-                            isLoading = true;
-                          });
-                          HapticFeedback.mediumImpact();
-                          // Simulate a network call
-                          await Future.delayed(Duration(seconds: 1));
-                          // Here you would typically call your activation function
-                          // For example:
-                          activateTicket();
-                          setState(() {
-                            isLoading = false;
-                          });
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Ticket Activated!", textAlign: TextAlign.center,)),
-                          );
-                        },
-                      ),
-              ],
-            ),
-          );
-        },
+    // Return early if ticket is not active
+    if (status.toLowerCase() != 'active') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            status.toLowerCase() == 'upcoming' 
+                ? "This ticket is not yet available for activation." 
+                : "This ticket has expired and cannot be activated.",
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.red.shade800,
+          duration: Duration(seconds: 3),
+        ),
       );
-    },
-  );
-}
+      return;
+    }
+    
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        bool isLoading = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              contentPadding: EdgeInsets.zero,
+              content: Container(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with colored background
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade800,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Activate Ticket", 
+                            style: TextStyle(
+                              fontSize: 24, 
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            ticketName,
+                            style: TextStyle(
+                              fontSize: 18, 
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Ticket details
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          // Parse description into sections for better display
+                          ...ticket_description.split('\n').map((line) => 
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Text(
+                                line,
+                                style: TextStyle(fontSize: 16),
+                                textAlign: TextAlign.center,
+                              ),
+                            )
+                          ).toList(),
+                          
+                          SizedBox(height: 16),
+                          
+                          // Status indicator
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: status.toLowerCase() == 'active' 
+                                ? Colors.green.shade100 
+                                : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: status.toLowerCase() == 'active' 
+                                  ? Colors.green
+                                  : Colors.grey,
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              "Status: $status",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: status.toLowerCase() == 'active' 
+                                  ? Colors.green.shade800
+                                  : Colors.grey.shade800,
+                              ),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 24),
+                          
+                          Text(
+                            "Hold the button below to activate this ticket for entry",
+                            style: TextStyle(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                          
+                          SizedBox(height: 20),
+                          
+                          isLoading
+                            ? Column(
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade800),
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    "Activating ticket...",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  )
+                                ],
+                              )
+                            : HoldToConfirmButton(
+                                holdDuration: Duration(seconds: 2),
+                                onConfirmed: () async {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  HapticFeedback.mediumImpact();
+                                  await Future.delayed(Duration(seconds: 1));
+                                  activateTicket();
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Ticket Activated! Please proceed to the checkpoint.",
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      backgroundColor: Colors.green.shade800,
+                                      duration: Duration(seconds: 3),
+                                    ),
+                                  );
+                                },
+                              ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context){
@@ -218,7 +327,33 @@ class HomePage extends StatelessWidget{
                             final ticket_id = data['ticket_id'] ?? 'Unknown Ticket ID';
                             final description = data['description'] ?? 'No description available'; 
                             final status = data['status'] ?? 'Unknown Status';
-                            return ticketObject(ticket_name, context, ticket_id, description, status);
+                            
+                            // Extract additional information
+                            final validFrom = data['valid_from'] ?? '';
+                            final validUntil = data['valid_until'] ?? '';
+                            final institutionName = data['institution_name'] ?? '';
+                            final accessedCount = data['accessed_count']?.toString() ?? '0';
+                            
+                            // Format date information if available
+                            String dateInfo = '';
+                            if (validFrom.isNotEmpty && validUntil.isNotEmpty) {
+                              if (validFrom == validUntil) {
+                                dateInfo = 'Valid on: $validFrom';
+                              } else {
+                                dateInfo = 'Valid: $validFrom to $validUntil';
+                              }
+                            }
+                            
+                            // Include institution name and date info in description if available
+                            String enhancedDescription = description;
+                            if (institutionName.isNotEmpty) {
+                              enhancedDescription = '$institutionName\n$enhancedDescription';
+                            }
+                            if (dateInfo.isNotEmpty) {
+                              enhancedDescription = '$enhancedDescription\n$dateInfo';
+                            }
+                            
+                            return ticketObject(ticket_name, context, ticket_id, enhancedDescription, status);
                           } catch (e) {
                             return Center(child: Text('Error loading ticket'));
                           }
@@ -235,63 +370,176 @@ class HomePage extends StatelessWidget{
         
   }
 Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
-  bool isDisabled = (status == 'Expired' || status == 'Upcoming');
+  bool isDisabled = (status.toLowerCase() == 'expired' || status.toLowerCase() == 'upcoming');
+  
+  // Get the appropriate status color
+  Color getStatusColor() {
+    switch(status.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'upcoming':
+        return Colors.amber;
+      case 'expired':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
+  }
+
   return Container(
-    margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+    margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
     width: double.infinity,
-    height: 150,
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(20),
-      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)],
     ),
-    child: Material( // Needed to show ripple effect inside decorated container
+    child: Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: isDisabled ? null: 
-        () {
+        onTap: isDisabled ? null : () {
           showActivationPopup(context, title, description, status);
         },
-        child: Row(
+        child: Column(
           children: [
-            // Stub on left
+            // Top section with institution color and name
             Container(
-              width: 60,
-              height: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.redAccent,
+                color: getStatusColor().withOpacity(0.15),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
-                  bottomLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // Institution logo/icon placeholder
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: getStatusColor(),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.confirmation_number_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  // Ticket name
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDisabled ? Colors.grey.shade600 : Colors.black,
+                      ),
+                    ),
+                  ),
+                  // Status chip
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: getStatusColor(),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Middle divider with ticket perforation
+            Container(
+              height: 2,
+              margin: EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: List.generate(
+                  30,
+                  (index) => Expanded(
+                    child: Container(
+                      height: 2,
+                      margin: EdgeInsets.symmetric(horizontal: 2),
+                      color: index % 2 == 0 ? Colors.grey.shade300 : Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
-
-            // Ticket info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDisabled? Colors.grey: Colors.black),),
-                    SizedBox(height: 10),
-                    Text(description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16, color: isDisabled? Colors.grey: Colors.black)),
-                    Text("Status: $status",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDisabled? Colors.grey: Colors.black)),
-                    SizedBox(height: 10),
-                  ],
-                ),
+            
+            // Bottom section with ticket details
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Description
+                  Text(
+                    description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDisabled ? Colors.grey : Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  
+                  // Action button for active tickets - only shown for active tickets, not for upcoming or expired
+                  if (status.toLowerCase() == 'active')
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          showActivationPopup(context, title, description, status);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: getStatusColor(),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        ),
+                        child: Text("Activate Ticket"),
+                      ),
+                    ),
+                  
+                  // Display different text for upcoming/expired tickets
+                  if (status.toLowerCase() == 'upcoming')
+                    Center(
+                      child: Text(
+                        "Available Soon",
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  if (status.toLowerCase() == 'expired')
+                    Center(
+                      child: Text(
+                        "Ticket Expired",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ],

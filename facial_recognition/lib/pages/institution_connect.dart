@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:facial_recognition/config/api_config.dart';
 
 
 class InstitutionConnect extends StatefulWidget {
@@ -22,7 +23,7 @@ class _InstitutionConnectState extends State<InstitutionConnect> {
       credentials_str[key] = value.text.trim();
     });
     final response = await http.post(
-          Uri.parse('http://192.168.1.66:5001/link_institution_account'),
+          Uri.parse(ApiConfig.getUrl('link_institution_account')),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:facial_recognition/config/api_config.dart';
 
 class EmailVerify extends StatefulWidget {
   final String email;
@@ -35,7 +36,7 @@ class _EmailVerifyState extends State<EmailVerify> {
       else{
         print("Email if verified, moving to camera page");
         final response = await http.post(
-          Uri.parse('http://192.168.1.66:5001/create_user'),
+          Uri.parse(ApiConfig.getUrl('create_user')),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },
