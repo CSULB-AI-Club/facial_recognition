@@ -228,6 +228,14 @@ def fetch_user_tickets(user_id, institution_id, link_id):
         mock_tickets = [
             {
                 "ticket_id": str(uuid.uuid4()),
+                "name": "Shaun's House Party",
+                "description": "Party at the crib",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
                 "name": "Taylor Swift - The Eras Tour",
                 "description": "Concert at SoFi Stadium, Row A, Seat 15",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
