@@ -1,12 +1,11 @@
 //import 'package:facial_recognition/pages/add_ticket.dart';
-import 'package:facial_recognition/pages/camera.dart';
+import 'package:facial_recognition/pages/institution_page.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:facial_recognition/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
-import 'package:facial_recognition/pages/settings.dart';
 import 'package:facial_recognition/pages/widgets/hold_button.dart';
 import 'package:flutter/services.dart';
 //import 'package:facial_recognition/models/tickets.dart';
@@ -122,112 +121,120 @@ class HomePage extends StatelessWidget{
                   return Center(child: CircularProgressIndicator());
                 }
                 final userData = snapshot.data!;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
-                    Padding(padding: EdgeInsets.only(left: 15),
-                    child: Row(
-                      children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(5),
-                          child: Opacity(opacity: 0.85,
-                          child: SvgPicture.asset('assets/icons/user_avatar.svg', 
-                          fit: BoxFit.cover))
-                        )
-                      ),
-                      Spacer(),
-                      blinkeyPopUp(context)
-                    ],)
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25,),
-                      child: Opacity(opacity: 1,
-                      child: Text('Welcome, ${userData['first_name']}', style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold), 
-                      ))
-                    ),
-                  ],
-                );
+return Column(
+  children: [
+    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(5),
+              child: Opacity(
+                opacity: 0.85,
+                child: SvgPicture.asset(
+                  'assets/icons/user_avatar.svg',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10),
+          Text(
+            'Welcome, ${userData['first_name']}',
+            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+          ),
+          Spacer(),
+          blinkeyPopUp(context),
+        ],
+      ),
+    ),
+  ],
+);
+
               }
             ),
             //ticketing section for user
-            Padding(
-                padding: const EdgeInsets.only(top: 0),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.778,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                    colors: [Color.fromRGBO(30, 90, 112, 1), Color.fromRGBO(57, 171, 214, 1)],
-                    ),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    )
-                  ),
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('tickets').where("user_id", isEqualTo: uid).snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                      final tickets= snapshot.data!.docs;
-                      if(tickets.isEmpty){
-                        return Center(
-                          child: Text(
-                            'No Tickets Found',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
-                        );
-                      }
-                      tickets.sort((a, b){
-                        final aDate = (a.data() as Map<String, dynamic>)['status'] ?? '';
-                        final bDate = (b.data() as Map<String, dynamic>)['status'] ?? '';
-                        int TicketSort(String status){
-                          switch(status){
-                            case 'active':
-                              return 0;
-                            case 'upcoming':
-                              return 1;
-                            case 'expired':
-                              return 2;
-                            default:
-                              return 3;
-                          }
-                        }
-                        return TicketSort(aDate).compareTo(TicketSort(bDate));
-                      });
-                      return ListView.builder(
-                        itemCount: tickets.length,
-                        itemBuilder: (context, index){
-                          try {
-                            final ticket = tickets[index];
-                            final data = ticket.data() as Map<String, dynamic>;
-                            // print(data);
-                            final ticket_name = data['name'] ?? 'Unknown Ticket';
-                            final ticket_id = data['ticket_id'] ?? 'Unknown Ticket ID';
-                            final description = data['description'] ?? 'No description available'; 
-                            final status = data['status'] ?? 'Unknown Status';
-                            return ticketObject(ticket_name, context, ticket_id, description, status);
-                          } catch (e) {
-                            return Center(child: Text('Error loading ticket'));
-                          }
-                        }
-                      );// Return an empty widget or appropriate fallback widget
-                    }
-                  )
-                ),
-              )
+Expanded(
+  child: Container(
+    width: double.infinity,
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          Color.fromRGBO(30, 90, 112, 1),
+          Color.fromRGBO(57, 171, 214, 1)
+        ],
+      ),
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(20),
+        bottomLeft: Radius.circular(20),
+        bottomRight: Radius.circular(20),
+        topRight: Radius.circular(20),
+      ),
+    ),
+    child: StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('tickets')
+          .where("user_id", isEqualTo: uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+        final tickets = snapshot.data!.docs;
+        if (tickets.isEmpty) {
+          return Center(
+            child: Text(
+              'No Tickets Found',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          );
+        }
+        tickets.sort((a, b) {
+          final aDate = (a.data() as Map<String, dynamic>)['status'] ?? '';
+          final bDate = (b.data() as Map<String, dynamic>)['status'] ?? '';
+          int TicketSort(String status) {
+            switch (status) {
+              case 'active':
+                return 0;
+              case 'upcoming':
+                return 1;
+              case 'expired':
+                return 2;
+              default:
+                return 3;
+            }
+          }
+          return TicketSort(aDate).compareTo(TicketSort(bDate));
+        });
+        return ListView.builder(
+          itemCount: tickets.length,
+          itemBuilder: (context, index) {
+            try {
+              final ticket = tickets[index];
+              final data = ticket.data() as Map<String, dynamic>;
+              final ticket_name = data['name'] ?? 'Unknown Ticket';
+              final ticket_id = data['ticket_id'] ?? 'Unknown Ticket ID';
+              final description = data['description'] ?? 'No description available';
+              final status = data['status'] ?? 'Unknown Status';
+              return ticketObject(ticket_name, context, ticket_id, description, status);
+            } catch (e) {
+              return Center(child: Text('Error loading ticket'));
+            }
+          },
+        );
+      },
+    ),
+  ),
+),
+
           ],
         ),
       );
@@ -301,6 +308,36 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
   );
 }
 
+void _showLogoutDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: Text("Log Out"),
+        content: Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close dialog
+            },
+          ),
+          TextButton(
+            child: Text("Log Out", style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              Navigator.of(dialogContext).pop(); // Close dialog
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LogIn()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
   Padding blinkeyPopUp(BuildContext context) {
     return Padding(
@@ -316,7 +353,7 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
         ),
         child: PopupMenuButton<int>(
           surfaceTintColor: Colors.white,
-          icon: SvgPicture.asset('assets/icons/dots.svg', height: 30, width: 30),
+          icon: SvgPicture.asset('assets/icons/hamburger_menu.svg', height: 25, width: 25),
           onSelected:(value){
             if (value == 1){
               Navigator.of(context).push(
@@ -331,8 +368,12 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
             if (value == 3){
               Navigator.of(context).push(
                 MaterialPageRoute(
-                builder: (context) => LogIn()));
+                builder: (context) => InstitutionPage()));
             }
+            if (value == 4){
+              _showLogoutDialog(context);
+            }
+
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -351,6 +392,13 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
             ),
             PopupMenuItem(
               value: 3,
+              child: ListTile(
+                leading: SvgPicture.asset('assets/icons/connect.svg', height: 24, width: 24),
+                title: Text('Connect Institution'),
+              ),
+            ),
+            PopupMenuItem(
+              value: 4,
               child: ListTile(
                 leading: SvgPicture.asset('assets/icons/logout.svg', height: 24, width: 24),
                 title: Text('Log out'),
