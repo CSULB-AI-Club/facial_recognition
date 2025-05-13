@@ -29,7 +29,6 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
     final fields = widget.institution["login_requirements"] ?? [];
     for (var field in fields) {
       _controllers[field["field_label"]] = TextEditingController();
-      _controllers[field["field_label"]] = TextEditingController();
     }
   }
 
@@ -41,11 +40,11 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
 
   Future<void> submitCredentials() async {
     if (!_formKey.currentState!.validate()) return;
+
     final credentials = {
       for (var key in _controllers.keys) key: _controllers[key]!.text,
     };
-    print(matchedUserId);
-    print(widget.institution["institution_id"]);
+
     final response = await http.post(
       Uri.parse(ApiConfig.getUrl('link_institution_account')),
       headers: {'Content-Type': 'application/json'},
@@ -53,7 +52,6 @@ class _InstitutionLinkPageState extends State<InstitutionLinkPage> {
         "uid": matchedUserId,
         "institution_id": widget.institution["institution_id"],
         "credentials": credentials,
-        "institution_name": widget.institution["name"],
       }),
     );
 

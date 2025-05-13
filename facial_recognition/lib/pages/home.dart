@@ -1,11 +1,12 @@
 //import 'package:facial_recognition/pages/add_ticket.dart';
-import 'package:facial_recognition/pages/institution_page.dart';
+import 'package:facial_recognition/pages/camera.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:facial_recognition/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
+import 'package:facial_recognition/pages/settings.dart';
 import 'package:facial_recognition/pages/widgets/hold_button.dart';
 import 'package:flutter/services.dart';
 //import 'package:facial_recognition/models/tickets.dart';
@@ -230,44 +231,40 @@ class HomePage extends StatelessWidget{
                   return Center(child: CircularProgressIndicator());
                 }
                 final userData = snapshot.data!;
-return Column(
-  children: [
-    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(5),
-              child: Opacity(
-                opacity: 0.85,
-                child: SvgPicture.asset(
-                  'assets/icons/user_avatar.svg',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 10),
-          Text(
-            'Welcome, ${userData['first_name']}',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-          ),
-          Spacer(),
-          blinkeyPopUp(context),
-        ],
-      ),
-    ),
-  ],
-);
-
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
+                    Padding(padding: EdgeInsets.only(left: 15),
+                    child: Row(
+                      children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(5),
+                          child: Opacity(opacity: 0.85,
+                          child: SvgPicture.asset('assets/icons/user_avatar.svg', 
+                          fit: BoxFit.cover))
+                        )
+                      ),
+                      Spacer(),
+                      blinkeyPopUp(context)
+                    ],)
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,),
+                      child: Opacity(opacity: 1,
+                      child: Text('Welcome, ${userData['first_name']}', style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold), 
+                      ))
+                    ),
+                  ],
+                );
               }
             ),
             //ticketing section for user
@@ -552,36 +549,6 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
   );
 }
 
-void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text("Log Out"),
-        content: Text("Are you sure you want to log out?"),
-        actions: [
-          TextButton(
-            child: Text("Cancel"),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
-            },
-          ),
-          TextButton(
-            child: Text("Log Out", style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LogIn()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
 
   Padding blinkeyPopUp(BuildContext context) {
     return Padding(
@@ -597,7 +564,7 @@ void _showLogoutDialog(BuildContext context) {
         ),
         child: PopupMenuButton<int>(
           surfaceTintColor: Colors.white,
-          icon: SvgPicture.asset('assets/icons/hamburger_menu.svg', height: 25, width: 25),
+          icon: SvgPicture.asset('assets/icons/dots.svg', height: 30, width: 30),
           onSelected:(value){
             if (value == 1){
               Navigator.of(context).push(
@@ -612,12 +579,8 @@ void _showLogoutDialog(BuildContext context) {
             if (value == 3){
               Navigator.of(context).push(
                 MaterialPageRoute(
-                builder: (context) => InstitutionPage()));
+                builder: (context) => LogIn()));
             }
-            if (value == 4){
-              _showLogoutDialog(context);
-            }
-
           },
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -636,13 +599,6 @@ void _showLogoutDialog(BuildContext context) {
             ),
             PopupMenuItem(
               value: 3,
-              child: ListTile(
-                leading: SvgPicture.asset('assets/icons/connect.svg', height: 24, width: 24),
-                title: Text('Connect Institution'),
-              ),
-            ),
-            PopupMenuItem(
-              value: 4,
               child: ListTile(
                 leading: SvgPicture.asset('assets/icons/logout.svg', height: 24, width: 24),
                 title: Text('Log out'),

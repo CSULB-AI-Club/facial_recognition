@@ -2,6 +2,7 @@
 import 'package:facial_recognition/pages/institution_page.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 class SettingsPage extends StatelessWidget {
