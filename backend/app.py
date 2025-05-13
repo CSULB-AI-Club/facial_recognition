@@ -114,7 +114,7 @@ def link_institution_account():
     # Get institution details including login requirements
     institution_data = inst.to_dict()
     login_requirements = institution_data.get("login_requirements", [])
-    
+    print(login_requirements)
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
@@ -845,7 +845,7 @@ def use_ticket(ticket_id):
 
     ticket_data = ticket.to_dict()
 
-    if ticket_data.get("status") != "Active":
+    if ticket_data.get("status") != "active":
         return jsonify({"error": "Ticket is not active"}), 400
 
     # Update the status to "used"
@@ -874,6 +874,7 @@ def match_face():
     find any 'active' ticket-holder whose stored face embeddings
     match the submitted photo within a cosine‐similarity threshold.
     """
+    print("Matching faces...")
     # 1) Validate inputs
     if 'image' not in request.files or 'institution_id' not in request.form:
         return jsonify({"error": "Both 'image' file and 'institution_id' are required"}), 400
@@ -882,7 +883,7 @@ def match_face():
     inst_id = request.form['institution_id']
  
     # Change this as needed
-    threshold = 0.1
+    threshold = 0.55
 
     # 2) Save incoming image to disk
     filename = secure_filename(img_file.filename)
@@ -897,9 +898,11 @@ def match_face():
     # 4) Fetch all 'active' tickets for this institution
     tickets = list(db.collection("tickets") \
                 .where("institution_id", "==", inst_id) \
-                .where("status", "==", "Active") \
+                .where("status", "==", "active") \
                 .stream())
     user_ids = {t.to_dict().get("user_id") for t in tickets}
+
+
 
     if not user_ids:
         return jsonify({"error": "No active tickets found for this institution"}), 404
@@ -970,7 +973,10 @@ def unlink_institution():
         .where("user_id", "==", user_id)\
         .where("institution_id", "==", institution_id)\
         .get()
-
+    
+    ticket_links = db.collection("tickets").where("user_id", "==", user_id).where("institution_id", "==", institution_id).get()
+    for link in ticket_links:
+        link.reference.delete()
     for link in links:
         link.reference.delete()
 

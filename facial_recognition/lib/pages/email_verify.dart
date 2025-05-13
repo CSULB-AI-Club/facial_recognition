@@ -20,6 +20,8 @@ class EmailVerify extends StatefulWidget {
 
 class _EmailVerifyState extends State<EmailVerify> {
   String verifyError = '';
+  String backendUrl = 'http://192.168.0.54:5001';
+
   Future<void> VerifyEmail() async{
     setState((){
       verifyError = '';

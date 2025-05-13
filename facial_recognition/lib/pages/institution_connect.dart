@@ -22,6 +22,7 @@ class _InstitutionConnectState extends State<InstitutionConnect> {
     controllers.forEach((key, value) {
       credentials_str[key] = value.text.trim();
     });
+    String backendUrl = 'http://192.168.0.54:5001';
     final response = await http.post(
           Uri.parse(ApiConfig.getUrl('link_institution_account')),
           headers: <String, String>{
