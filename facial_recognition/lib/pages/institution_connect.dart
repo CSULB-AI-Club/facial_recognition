@@ -21,8 +21,9 @@ class _InstitutionConnectState extends State<InstitutionConnect> {
     controllers.forEach((key, value) {
       credentials_str[key] = value.text.trim();
     });
+    String backendUrl = 'http://192.168.0.54:5001';
     final response = await http.post(
-          Uri.parse('http://192.168.0.163:5001/link_institution_account'),
+          Uri.parse('$backendUrl/link_institution_account'),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },

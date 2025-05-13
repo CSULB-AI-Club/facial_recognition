@@ -19,6 +19,8 @@ class EmailVerify extends StatefulWidget {
 
 class _EmailVerifyState extends State<EmailVerify> {
   String verifyError = '';
+  String backendUrl = 'http://192.168.0.54:5001';
+
   Future<void> VerifyEmail() async{
     setState((){
       verifyError = '';
@@ -35,7 +37,7 @@ class _EmailVerifyState extends State<EmailVerify> {
       else{
         print("Email if verified, moving to camera page");
         final response = await http.post(
-          Uri.parse('http://192.168.1.26:5001/create_user'),
+          Uri.parse('$backendUrl/create_user'),
           headers: <String, String>{
           'Content-Type': 'application/json',
         },

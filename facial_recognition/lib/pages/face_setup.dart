@@ -24,6 +24,7 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
   CameraController? cameraController;
   int selectedCameraIndex = 0;
   bool _isCapturingBurst = false;
+  String backendUrl = 'http://192.168.0.54:5001';
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -66,7 +67,7 @@ class _FaceSetupState extends State<FaceSetup> with WidgetsBindingObserver{
     try {
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://192.168.1.26:5001/upload'),
+      Uri.parse('$backendUrl/upload'),
     );
     
     request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
