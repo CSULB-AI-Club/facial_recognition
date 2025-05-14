@@ -115,7 +115,7 @@ def link_institution_account():
     # Get institution details including login requirements
     institution_data = inst.to_dict()
     login_requirements = institution_data.get("login_requirements", [])
-    print(login_requirements)
+    
     # Validate that all required credentials are provided
     missing_fields = []
     for field in login_requirements:
@@ -234,17 +234,16 @@ def fetch_user_tickets(user_id, institution_id, link_id):
         mock_tickets = [
             {
                 "ticket_id": str(uuid.uuid4()),
-                "name": "Taylor Swift - The Eras Tour",
-                "description": "Concert at SoFi Stadium, Row A, Seat 15",
+                "name": "Shaun's House Party",
+                "description": "Party at the crib",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
-                "status": "active",
-                "detection": False
+                "status": "active"
             },
             {
                 "ticket_id": str(uuid.uuid4()),
-                "name": "Shaun's House Party",
-                "description": "Party at the crib",
+                "name": "Taylor Swift - The Eras Tour",
+                "description": "Concert at SoFi Stadium, Row A, Seat 15",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
                 "status": "active",
@@ -949,11 +948,10 @@ def use_ticket(ticket_id):
 
     ticket_data = ticket.to_dict()
 
-    if ticket_data.get("status") != "active":
+    if ticket_data.get("status") != "Active":
         return jsonify({"error": "Ticket is not active"}), 400
     
-    if not ticket_data.get("detection"):
-        return jsonify({"error": "Ticket is has not been activated"}), 400
+
 
 
     # Update the status to "used"
@@ -982,7 +980,6 @@ def match_face():
     find any 'active' ticket-holder whose stored face embeddings
     match the submitted photo within a cosine‐similarity threshold.
     """
-    print("Matching faces...")
     # 1) Validate inputs
     if 'image' not in request.files or 'institution_id' not in request.form:
         return jsonify({"error": "Both 'image' file and 'institution_id' are required"}), 400
@@ -991,7 +988,7 @@ def match_face():
     inst_id = request.form['institution_id']
  
     # Change this as needed
-    threshold = 0.55
+    threshold = 0.1
 
     # 2) Save incoming image to disk
     filename = secure_filename(img_file.filename)
@@ -1006,11 +1003,9 @@ def match_face():
     # 4) Fetch all 'active' tickets for this institution
     tickets = list(db.collection("tickets") \
                 .where("institution_id", "==", inst_id) \
-                .where("status", "==", "active") \
+                .where("status", "==", "Active") \
                 .stream())
     user_ids = {t.to_dict().get("user_id") for t in tickets}
-
-
 
     if not user_ids:
         return jsonify({"error": "No active tickets found for this institution"}), 404
@@ -1081,14 +1076,13 @@ def unlink_institution():
         .where("user_id", "==", user_id)\
         .where("institution_id", "==", institution_id)\
         .get()
-    
-    ticket_links = db.collection("tickets").where("user_id", "==", user_id).where("institution_id", "==", institution_id).get()
-    for link in ticket_links:
-        link.reference.delete()
+
     for link in links:
         link.reference.delete()
 
     return jsonify({"message": "Institution disconnected"})
+
+
 
 
 
