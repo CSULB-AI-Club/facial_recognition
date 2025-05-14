@@ -20,6 +20,7 @@ class _LogInState extends State<LogIn> {
   final TextEditingController passwordController = TextEditingController();
   String emailError = '';
   String passwordError = '';
+  bool isLoading = false;
   String backendUrl = 'http://192.168.0.54:5001';
   Future<void> signIn() async {
     String email = emailController.text.trim();
@@ -27,15 +28,18 @@ class _LogInState extends State<LogIn> {
     setState(() {
       emailError = '';
       passwordError = '';
+      isLoading = true;
     });
 
     if (email.isEmpty) {
       setState(() {
+        isLoading = false;
         emailError = 'Please enter an email';
       });
     }
     if (password.isEmpty) {
       setState(() {
+        isLoading = false;
         passwordError = 'Please enter a password';
       });
     }
@@ -68,6 +72,7 @@ class _LogInState extends State<LogIn> {
           e.code == 'invalid-email') {
         print("Email or password is invalid");
         setState(() {
+          isLoading = false;
           emailError = 'email or password is invalid';
           passwordError = 'email or password is invalid';
         });
@@ -186,7 +191,8 @@ class _LogInState extends State<LogIn> {
               ],
             ),
             SizedBox(height: 50),
-            GestureDetector(
+            isLoading ? const CircularProgressIndicator()
+            : GestureDetector(
               onTap: () => signIn(),
               child: Container(
                 height: 60,

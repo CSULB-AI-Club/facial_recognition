@@ -1053,7 +1053,7 @@ def match_face():
             "email":      user_data["email"]
         }
         ticket_id = str([t.to_dict().get("ticket_id") for t in tickets if t.to_dict().get("user_id") == best_uid][0])
-        print(ticket_id)
+        print(user_info)
         use_ticket(ticket_id)
         return jsonify({
             "message": f"Match found: {user_info['first_name']} {user_info['last_name']}",

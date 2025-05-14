@@ -769,12 +769,12 @@ void _showLogoutDialog(BuildContext context) {
             if (value == 1){
               Navigator.of(context).push(
                 MaterialPageRoute(
-                builder: (context) => FaceSetup(uid: uid, home_camera: 'camera')));
+                builder: (context) => FaceSetup(uid: widget.uid, home_camera: 'camera')));
             }
             if (value == 2){
               Navigator.of(context).push(
                 MaterialPageRoute(
-                builder: (context) => SettingsPage(uid: uid)));
+                builder: (context) => SettingsPage(uid: widget.uid)));
             }
             if (value == 3){
               Navigator.of(context).push(
