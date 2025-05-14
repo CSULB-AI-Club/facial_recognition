@@ -8,32 +8,114 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:facial_recognition/pages/face_setup.dart';
 import 'package:facial_recognition/pages/widgets/hold_button.dart';
 import 'package:flutter/services.dart';
+import 'package:facial_recognition/services/ticket_service.dart';
+import 'dart:async';
 //import 'package:facial_recognition/models/tickets.dart';
 
-class HomePage extends StatelessWidget{
+class HomePage extends StatefulWidget {
   final String uid;
   const HomePage({super.key, required this.uid});
-  //List <Tickets> tickets = [];
-  
 
-  Future<void> activateTicket() async {
-    // Simulate a network call to activate the ticket
-    // DocumentSnapshot<Map<String, dynamic>> userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-    // var detection = userDoc.data()?['detection'] ?? false;
-    await Future.delayed(Duration(seconds: 1));
-    FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'detection': true,
-    });
-      await Future.delayed(Duration(seconds: 15));
-    FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'detection': false,
-    });
-    // Here you would typically call your activation function
-    // For example:
-    // await activateTicket(ticketId);
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Track active tickets and their timers
+  Map<String, Timer> _ticketTimers = {};
+  Map<String, DateTime> _expiryTimes = {};
+
+  @override
+  void dispose() {
+    // Cancel all running timers when the page is disposed
+    _ticketTimers.forEach((_, timer) => timer.cancel());
+    super.dispose();
   }
 
-  void showActivationPopup(BuildContext context, String ticketName, String ticket_description, String status) {
+  Future<void> activateTicket(String ticketId) async {
+    try {
+      print("Activating ticket $ticketId for user ${widget.uid}");
+      
+      // Call the API to activate the ticket
+      final result = await TicketService.activateTicket(ticketId, widget.uid);
+      print("API response: $result");
+      
+      // Get the expiry time from the API response
+      final expiresAt = DateTime.parse(result['expires_at']);
+      final durationMinutes = result['expires_in_minutes'] as int;
+      
+      print("Ticket activated successfully. Expires in $durationMinutes minutes at $expiresAt");
+      
+      // Update the UI to show the countdown
+      setState(() {
+        _expiryTimes[ticketId] = expiresAt;
+      });
+
+      // Set up a timer to update the countdown every second
+      _ticketTimers[ticketId]?.cancel();  // Cancel any existing timer
+      _ticketTimers[ticketId] = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        
+        final now = DateTime.now();
+        if (now.isAfter(expiresAt)) {
+          // Timer has expired
+          print("Ticket $ticketId activation expired");
+          timer.cancel();
+          if (mounted) {
+            setState(() {
+              _expiryTimes.remove(ticketId);
+            });
+          }
+        } else {
+          // Just trigger a rebuild to update the countdown
+          if (mounted) {
+            setState(() {});
+          }
+        }
+      });
+    } catch (e) {
+      print('Error activating ticket: $e');
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Failed to activate ticket: ${e.toString()}",
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Colors.red.shade800,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  // Helper method to format remaining time
+  String formatRemainingTime(DateTime expiryTime) {
+    final now = DateTime.now();
+    final difference = expiryTime.difference(now);
+    
+    if (difference.isNegative) {
+      return 'Expired';
+    }
+    
+    final minutes = difference.inMinutes;
+    final seconds = difference.inSeconds % 60;
+    
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  // Check if a ticket is currently active (has an active timer)
+  bool isTicketActive(String ticketId) {
+    return _expiryTimes.containsKey(ticketId) && 
+           DateTime.now().isBefore(_expiryTimes[ticketId]!);
+  }
+
+  void showActivationPopup(BuildContext context, String ticketName, String ticket_id, String ticket_description, String status) {
     // Return early if ticket is not active
     if (status.toLowerCase() != 'active') {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -45,6 +127,21 @@ class HomePage extends StatelessWidget{
             textAlign: TextAlign.center,
           ),
           backgroundColor: Colors.red.shade800,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+    
+    // If ticket is already active, show a message and don't allow reactivation
+    if (isTicketActive(ticket_id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "This ticket is already active",
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.blue.shade800,
           duration: Duration(seconds: 3),
         ),
       );
@@ -183,22 +280,24 @@ class HomePage extends StatelessWidget{
                                     isLoading = true;
                                   });
                                   HapticFeedback.mediumImpact();
-                                  await Future.delayed(Duration(seconds: 1));
-                                  activateTicket();
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Ticket Activated! Please proceed to the checkpoint.",
-                                        textAlign: TextAlign.center,
+                                  try {
+                                    await activateTicket(ticket_id);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Ticket Activated! Please proceed to the checkpoint.",
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        backgroundColor: Colors.green.shade800,
+                                        duration: Duration(seconds: 3),
                                       ),
-                                      backgroundColor: Colors.green.shade800,
-                                      duration: Duration(seconds: 3),
-                                    ),
-                                  );
+                                    );
+                                  } catch (e) {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  }
                                 },
                               ),
                         ],
@@ -224,50 +323,49 @@ class HomePage extends StatelessWidget{
         Column(
           children: [
             StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+              stream: FirebaseFirestore.instance.collection('users').doc(widget.uid).snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData){
                   return Center(child: CircularProgressIndicator());
                 }
                 final userData = snapshot.data!;
-return Column(
-  children: [
-    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(5),
-              child: Opacity(
-                opacity: 0.85,
-                child: SvgPicture.asset(
-                  'assets/icons/user_avatar.svg',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 10),
-          Text(
-            'Welcome, ${userData['first_name']}',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-          ),
-          Spacer(),
-          blinkeyPopUp(context),
-        ],
-      ),
-    ),
-  ],
-);
-
+                return Column(
+                  children: [
+                    SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(5),
+                              child: Opacity(
+                                opacity: 0.85,
+                                child: SvgPicture.asset(
+                                  'assets/icons/user_avatar.svg',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'Welcome, ${userData['first_name']}',
+                            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+                          ),
+                          Spacer(),
+                          blinkeyPopUp(context),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
               }
             ),
             //ticketing section for user
@@ -288,7 +386,7 @@ return Column(
                     )
                   ),
                   child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('tickets').where("user_id", isEqualTo: uid).snapshots(),
+                    stream: FirebaseFirestore.instance.collection('tickets').where("user_id", isEqualTo: widget.uid).snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return Center(child: CircularProgressIndicator());
@@ -327,7 +425,10 @@ return Column(
                             final data = ticket.data() as Map<String, dynamic>;
                             // print(data);
                             final ticket_name = data['name'] ?? 'Unknown Ticket';
-                            final ticket_id = data['ticket_id'] ?? 'Unknown Ticket ID';
+                            
+                            // Use the document ID as the ticket ID if 'ticket_id' field is not present
+                            final ticket_id = data['ticket_id'] ?? ticket.id;
+                            
                             final description = data['description'] ?? 'No description available'; 
                             final status = data['status'] ?? 'Unknown Status';
                             
@@ -356,12 +457,16 @@ return Column(
                               enhancedDescription = '$enhancedDescription\n$dateInfo';
                             }
                             
+                            // Add debug print for ticket ID
+                            print("Rendering ticket: $ticket_name with ID: $ticket_id");
+                            
                             return ticketObject(ticket_name, context, ticket_id, enhancedDescription, status);
                           } catch (e) {
+                            print("Error rendering ticket: $e");
                             return Center(child: Text('Error loading ticket'));
                           }
                         }
-                      );// Return an empty widget or appropriate fallback widget
+                      );
                     }
                   )
                 ),
@@ -369,14 +474,18 @@ return Column(
           ],
         ),
       );
-
-        
   }
+
 Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
   bool isDisabled = (status.toLowerCase() == 'expired' || status.toLowerCase() == 'upcoming');
+  bool isTicketCurrentlyActive = isTicketActive(ticket_id);
   
   // Get the appropriate status color
   Color getStatusColor() {
+    if (isTicketCurrentlyActive) {
+      return Colors.blue.shade700; // Special color for actively running timer
+    }
+    
     switch(status.toLowerCase()) {
       case 'active':
         return Colors.green;
@@ -402,7 +511,7 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: isDisabled ? null : () {
-          showActivationPopup(context, title, description, status);
+          showActivationPopup(context, title, ticket_id, description, status);
         },
         child: Column(
           children: [
@@ -427,7 +536,7 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.confirmation_number_outlined,
+                      isTicketCurrentlyActive ? Icons.timer : Icons.confirmation_number_outlined,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -446,22 +555,49 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
                       ),
                     ),
                   ),
-                  // Status chip
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: getStatusColor(),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                  // Status chip or active timer
+                  isTicketCurrentlyActive
+                      ? Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade700,
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.timer,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                formatRemainingTime(_expiryTimes[ticket_id]!),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: getStatusColor(),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Text(
+                            status,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
                 ],
               ),
             ),
@@ -502,12 +638,42 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
                   ),
                   SizedBox(height: 12),
                   
-                  // Action button for active tickets - only shown for active tickets, not for upcoming or expired
-                  if (status.toLowerCase() == 'active')
+                  // Action button or active timer status
+                  if (isTicketCurrentlyActive)
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.blue.shade200),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.blue.shade700,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Active - Expires in ${formatRemainingTime(_expiryTimes[ticket_id]!)}",
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  // Action button for active tickets - only shown for active tickets that are not currently activated
+                  else if (status.toLowerCase() == 'active')
                     Center(
                       child: ElevatedButton(
                         onPressed: () {
-                          showActivationPopup(context, title, description, status);
+                          showActivationPopup(context, title, ticket_id, description, status);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: getStatusColor(),
@@ -584,73 +750,68 @@ void _showLogoutDialog(BuildContext context) {
 }
 
   Padding blinkeyPopUp(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Padding(
       padding: const EdgeInsets.only(right: 20),
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          popupMenuTheme: PopupMenuThemeData(
-            color: Colors.grey[100],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          )
+      child: PopupMenuButton<int>(
+        surfaceTintColor: Colors.white,
+        icon: SvgPicture.asset('assets/icons/hamburger_menu.svg', height: 25, width: 25),
+        color: Colors.grey[100],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: PopupMenuButton<int>(
-          surfaceTintColor: Colors.white,
-          icon: SvgPicture.asset('assets/icons/hamburger_menu.svg', height: 25, width: 25),
-          onSelected:(value){
-            if (value == 1){
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                builder: (context) => FaceSetup(uid: uid, home_camera: 'camera')));
-            }
-            if (value == 2){
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                builder: (context) => SettingsPage(uid: uid)));
-            }
-            if (value == 3){
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                builder: (context) => InstitutionPage()));
-            }
-            if (value == 4){
-              _showLogoutDialog(context);
-            }
-
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 1,
-              child: ListTile(
-                leading: SvgPicture.asset('assets/icons/face_setup.svg', height: 24, width: 24),
-                title: Text('Setup Face ID'),
-              ),
+        onSelected:(value){
+          if (value == 1){
+            Navigator.of(context).push(
+              MaterialPageRoute(
+              builder: (context) => FaceSetup(uid: widget.uid, home_camera: 'camera')));
+          }
+          if (value == 2){
+            Navigator.of(context).push(
+              MaterialPageRoute(
+              builder: (context) => SettingsPage(uid: widget.uid)));
+          }
+          if (value == 3){
+            Navigator.of(context).push(
+              MaterialPageRoute(
+              builder: (context) => InstitutionPage()));
+          }
+          if (value == 4){
+            _showLogoutDialog(context);
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 1,
+            child: ListTile(
+              leading: SvgPicture.asset('assets/icons/face_setup.svg', height: 24, width: 24),
+              title: Text('Setup Face ID'),
             ),
-            PopupMenuItem(
-              value: 2,
-              child: ListTile(
-                leading: SvgPicture.asset('assets/icons/settings.svg', height: 24, width: 24),
-                title: Text('Settings'),
-              ),
-            ),
-            PopupMenuItem(
-              value: 3,
-              child: ListTile(
-                leading: SvgPicture.asset('assets/icons/connect.svg', height: 24, width: 24),
-                title: Text('Connect Institution'),
-              ),
-            ),
-            PopupMenuItem(
-              value: 4,
-              child: ListTile(
-                leading: SvgPicture.asset('assets/icons/logout.svg', height: 24, width: 24),
-                title: Text('Log out'),
-                textColor: Colors.red,
-              ),
-            ),
-          ],
           ),
+          PopupMenuItem(
+            value: 2,
+            child: ListTile(
+              leading: SvgPicture.asset('assets/icons/settings.svg', height: 24, width: 24),
+              title: Text('Settings'),
+            ),
+          ),
+          PopupMenuItem(
+            value: 3,
+            child: ListTile(
+              leading: SvgPicture.asset('assets/icons/connect.svg', height: 24, width: 24),
+              title: Text('Connect Institution'),
+            ),
+          ),
+          PopupMenuItem(
+            value: 4,
+            child: ListTile(
+              leading: SvgPicture.asset('assets/icons/logout.svg', height: 24, width: 24),
+              title: Text('Log out'),
+              textColor: Colors.red,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -674,13 +835,13 @@ void _showLogoutDialog(BuildContext context) {
             Navigator.of(context).push(
               MaterialPageRoute(
               //builder: (context) => const Settings()),
-              builder: (context) =>  SettingsPage(uid: uid)),
+              builder: (context) =>  SettingsPage(uid: widget.uid)),
             );
           }
           // if (value == 2){
           //   Navigator.of(context).push(
           //     MaterialPageRoute(
-          //     builder: (context) => const FaceSetup(uid: uid)),
+          //     builder: (context) => const FaceSetup(uid: widget.uid)),
           //   );
           // }
           if (value == 3){

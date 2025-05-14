@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String serverIP = '192.168.1.66';
+  static const String serverIP = '10.232.232.101';
   static const int serverPort = 5001;
   static const String baseUrl = 'http://$serverIP:$serverPort';
 
@@ -9,6 +9,8 @@ class ApiConfig {
     if (endpoint.startsWith('/')) {
       endpoint = endpoint.substring(1);
     }
-    return '$baseUrl/$endpoint';
+    final url = '$baseUrl/$endpoint';
+    print("API URL: $url"); // Debug print
+    return url;
   }
 } 
