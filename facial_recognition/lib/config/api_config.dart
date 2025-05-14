@@ -1,9 +1,5 @@
 class ApiConfig {
-<<<<<<< Updated upstream
   static const String serverIP = '10.232.232.101';
-=======
-  static const String serverIP = '10.232.232.108';
->>>>>>> Stashed changes
   static const int serverPort = 5001;
   static const String baseUrl = 'http://$serverIP:$serverPort';
 

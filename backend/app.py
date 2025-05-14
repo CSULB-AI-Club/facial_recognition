@@ -1029,7 +1029,6 @@ def match_face():
 
     if not user_matches:
         return jsonify({"error": "No stored embeddings for any active-ticket users"}), 404
-
     # 6) Compute cosine-similarities
     best_uid, best_score = None, 0.0
     for uid, embs in user_matches.items():
@@ -1043,7 +1042,7 @@ def match_face():
     print(f"Best Score: {best_score}")
     # 7) Check threshold and respond
     if best_score >= threshold:
-        user = db.collection("users").where("user_id", "==", uid).get()
+        user = db.collection("users").where("user_id", "==", best_uid).get()
         user_doc = user[0]
         user_data = user_doc.to_dict()
         user_info = {
@@ -1053,7 +1052,6 @@ def match_face():
             "email":      user_data["email"]
         }
         ticket_id = str([t.to_dict().get("ticket_id") for t in tickets if t.to_dict().get("user_id") == best_uid][0])
-        print(user_info)
         use_ticket(ticket_id)
         return jsonify({
             "message": f"Match found: {user_info['first_name']} {user_info['last_name']}",

@@ -404,11 +404,11 @@ return Column(
                         final bDate = (b.data() as Map<String, dynamic>)['status'] ?? '';
                         int TicketSort(String status){
                           switch(status){
-                            case 'Active':
+                            case 'active':
                               return 0;
-                            case 'Upcoming':
+                            case 'upcoming':
                               return 1;
-                            case 'Expired':
+                            case 'expired':
                               return 2;
                             default:
                               return 3;
