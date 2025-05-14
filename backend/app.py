@@ -12,6 +12,7 @@ from threading import Event, Thread
 from sklearn.metrics.pairwise import cosine_similarity
 from firebase_admin import auth
 from datetime import datetime, timedelta
+import time  # Add this import at the top of your file
 
 
 app = Flask(__name__)
@@ -204,6 +205,7 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "name": "Disney World - Park Hopper",
                 "description": "Access to all Disney World parks",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
+                "detection": False,
                 "valid_until": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
                 "status": "upcoming"
             },
@@ -213,7 +215,9 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Skip the lines with VIP access",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=2)).strftime("%Y-%m-%d"),
-                "status": "upcoming"
+                "status": "upcoming",
+                "detection": False
+
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -221,18 +225,29 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Special evening access to Epcot attractions",
                 "valid_from": (current_date + timedelta(days=3)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=3)).strftime("%Y-%m-%d"),
-                "status": "upcoming"
+                "status": "upcoming",
+                "detection": False
+
             }
         ]
     elif institution_name == "Ticketmaster":
         mock_tickets = [
             {
                 "ticket_id": str(uuid.uuid4()),
+                "name": "Shaun's House Party",
+                "description": "Party at the crib",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "status": "active"
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
                 "name": "Taylor Swift - The Eras Tour",
                 "description": "Concert at SoFi Stadium, Row A, Seat 15",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "active",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -240,7 +255,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Lakers vs Celtics, Section 112, Row 7, Seat 8",
                 "valid_from": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
-                "status": "upcoming"
+                "status": "upcoming",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -248,7 +264,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Orchestra Center, Row F, Seat 107",
                 "valid_from": (current_date - timedelta(days=5)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date - timedelta(days=5)).strftime("%Y-%m-%d"),
-                "status": "expired"
+                "status": "expired",
+                "detection": False
             }
         ]
     elif institution_name == "Universal Studios":
@@ -259,7 +276,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Access to Universal Studios and Islands of Adventure",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=2)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "active",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -267,7 +285,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Skip regular lines at participating attractions",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "active",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -275,7 +294,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Special event access - October 31st",
                 "valid_from": (current_date + timedelta(days=45)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=45)).strftime("%Y-%m-%d"),
-                "status": "upcoming"
+                "status": "upcoming",
+                "detection": False
             }
         ]
     elif institution_name == "Six Flags":
@@ -286,7 +306,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Unlimited visits to all Six Flags parks",
                 "valid_from": (current_date - timedelta(days=30)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=335)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "active",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -294,7 +315,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Priority access to selected rides",
                 "valid_from": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=5)).strftime("%Y-%m-%d"),
-                "status": "upcoming"
+                "status": "upcoming",
+                "detection": False
             }
         ]
     elif institution_name == "StubHub":
@@ -305,7 +327,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Rose Bowl Stadium, Section 7, Row 20, Seats 5-6",
                 "valid_from": (current_date + timedelta(days=15)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=15)).strftime("%Y-%m-%d"),
-                "status": "upcoming"
+                "status": "upcoming",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -313,7 +336,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Dodger Stadium, Loge Level, Section 103, Row C, Seat 5",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": current_date.strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "active",
+                "detection": False
             },
             {
                 "ticket_id": str(uuid.uuid4()),
@@ -321,7 +345,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "General Admission with Shuttle Pass",
                 "valid_from": (current_date - timedelta(days=45)).strftime("%Y-%m-%d"),
                 "valid_until": (current_date - timedelta(days=43)).strftime("%Y-%m-%d"),
-                "status": "expired"
+                "status": "expired",
+                "detection": False
             }
         ]
     else:
@@ -333,7 +358,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
                 "description": "Standard entry ticket",
                 "valid_from": current_date.strftime("%Y-%m-%d"),
                 "valid_until": (current_date + timedelta(days=30)).strftime("%Y-%m-%d"),
-                "status": "active"
+                "status": "active",
+                "detection": False
             }
         ]
     
@@ -347,7 +373,8 @@ def fetch_user_tickets(user_id, institution_id, link_id):
             "link_id": link_id,
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "accessed_count": 0,
-            "last_accessed": None
+            "last_accessed": None,
+            "detection": False
         })
     
     return mock_tickets
@@ -420,6 +447,82 @@ def activate_ticket():
     })
 
     return jsonify({"message": "Ticket activated for facial recognition"})
+
+@app.route("/activate_ticket_temporary", methods=["POST"])
+def activate_ticket_temporary():
+    print("Received activate_ticket_temporary request")
+    data = request.json
+    if not data:
+        print("No JSON data received")
+        return jsonify({"error": "No data provided"}), 400
+        
+    print(f"Received data: {data}")
+    
+    if "ticket_id" not in data or "user_id" not in data:
+        print("Missing required fields")
+        return jsonify({"error": "Ticket ID and User ID are required"}), 400
+
+    ticket_id = data["ticket_id"]
+    user_id = data["user_id"]
+    duration_minutes = data.get("duration_minutes", 5)  # Default to 5 minutes if not specified
+    
+    print(f"Processing activation for ticket: {ticket_id}, user: {user_id}, duration: {duration_minutes} minutes")
+
+    # Get the ticket
+    ticket_ref = db.collection("tickets").document(ticket_id)
+    ticket = ticket_ref.get()
+
+    if not ticket.exists:
+        print(f"Ticket {ticket_id} not found")
+        return jsonify({"error": "Ticket not found"}), 400
+    
+    ticket_data = ticket.to_dict()
+    print(f"Ticket data: {ticket_data}")
+
+    # Check if ticket belongs to user
+    if ticket_data["user_id"] != user_id:
+        print(f"Ticket {ticket_id} does not belong to user {user_id}")
+        return jsonify({"error": "Ticket does not belong to this user"}), 403
+    
+    # Check if this ticket is valid
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    if ticket_data["valid_from"] > current_date or ticket_data["valid_until"] < current_date:
+        print(f"Ticket {ticket_id} is not valid at this time. Valid from {ticket_data['valid_from']} to {ticket_data['valid_until']}")
+        return jsonify({"error": "Ticket is not valid at this time"}), 400
+    
+    # Set the detection flag to true for this ticket
+    try:
+        ticket_ref.update({
+            "detection": True,
+            "accessed_count": ticket_data.get("accessed_count", 0) + 1,
+            "last_accessed": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "activation_expiry": (datetime.now() + timedelta(minutes=duration_minutes)).strftime("%Y-%m-%d %H:%M:%S")
+        })
+        print(f"Ticket {ticket_id} activated for {duration_minutes} minutes")
+    except Exception as e:
+        print(f"Error updating ticket: {e}")
+        return jsonify({"error": f"Failed to update ticket: {str(e)}"}), 500
+
+    # Schedule a task to reset the detection flag after the specified duration
+    # In a production environment, you might use a task queue or cron job
+    # For this implementation, we'll use a simple thread
+    def reset_detection_after_delay():
+        try:
+            time.sleep(duration_minutes * 60)
+            print(f"Timer expired for ticket {ticket_id}, resetting detection flag")
+            ticket_ref.update({"detection": False})
+            print(f"Detection flag reset for ticket {ticket_id}")
+        except Exception as e:
+            print(f"Error in reset thread: {e}")
+
+    Thread(target=reset_detection_after_delay).start()
+    print(f"Reset thread started for ticket {ticket_id}")
+
+    return jsonify({
+        "message": "Ticket activated for facial recognition", 
+        "expires_in_minutes": duration_minutes,
+        "expires_at": (datetime.now() + timedelta(minutes=duration_minutes)).strftime("%Y-%m-%d %H:%M:%S")
+    })
 
 
 ##### INTIALIZE THE DATABASE WITH MOCK DATA #######
@@ -847,6 +950,9 @@ def use_ticket(ticket_id):
 
     if ticket_data.get("status") != "active":
         return jsonify({"error": "Ticket is not active"}), 400
+    
+
+
 
     # Update the status to "used"
     ticket_ref.update({
@@ -863,7 +969,7 @@ def use_ticket(ticket_id):
 import os
 from werkzeug.utils import secure_filename
 
-# where we’ll temporarily store incoming photos for matching
+# where we'll temporarily store incoming photos for matching
 IMAGE_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(IMAGE_UPLOAD_FOLDER, exist_ok=True)
 
@@ -907,7 +1013,7 @@ def match_face():
     if not user_ids:
         return jsonify({"error": "No active tickets found for this institution"}), 404
 
-    # 5) Load each user’s stored embeddings
+    # 5) Load each user's stored embeddings
     user_matches = {}
     for uid in user_ids:
         udoc = db.collection("users").document(uid).get()
