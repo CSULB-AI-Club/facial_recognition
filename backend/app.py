@@ -243,6 +243,15 @@ def fetch_user_tickets(user_id, institution_id, link_id):
             },
             {
                 "ticket_id": str(uuid.uuid4()),
+                "name": "Shaun's House Party",
+                "description": "Party at the crib",
+                "valid_from": current_date.strftime("%Y-%m-%d"),
+                "valid_until": (current_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+                "status": "active",
+                "detection": False
+            },
+            {
+                "ticket_id": str(uuid.uuid4()),
                 "name": "NBA Finals - Game 5",
                 "description": "Lakers vs Celtics, Section 112, Row 7, Seat 8",
                 "valid_from": (current_date + timedelta(days=10)).strftime("%Y-%m-%d"),
@@ -943,7 +952,8 @@ def use_ticket(ticket_id):
     if ticket_data.get("status") != "active":
         return jsonify({"error": "Ticket is not active"}), 400
     
-
+    if not ticket_data.get("detection"):
+        return jsonify({"error": "Ticket is has not been activated"}), 400
 
 
     # Update the status to "used"
@@ -1079,8 +1089,6 @@ def unlink_institution():
         link.reference.delete()
 
     return jsonify({"message": "Institution disconnected"})
-
-
 
 
 
