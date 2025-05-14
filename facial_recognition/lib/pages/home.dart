@@ -1,5 +1,6 @@
 //import 'package:facial_recognition/pages/add_ticket.dart';
 import 'package:facial_recognition/pages/institution_page.dart';
+import 'package:facial_recognition/pages/camera.dart';
 import 'package:facial_recognition/pages/login.dart';
 import 'package:facial_recognition/pages/settings.dart';
 import 'package:flutter/material.dart';
@@ -315,8 +316,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context){
-    
-    //tickets = Tickets.getTickets();
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 252, 251, 251),
         body: 
@@ -330,39 +329,36 @@ class _HomePageState extends State<HomePage> {
                 }
                 final userData = snapshot.data!;
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 0.175 * MediaQuery.of(context).devicePixelRatio * 160),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(5),
-                              child: Opacity(
-                                opacity: 0.85,
-                                child: SvgPicture.asset(
-                                  'assets/icons/user_avatar.svg',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'Welcome, ${userData['first_name']}',
-                            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-                          ),
-                          Spacer(),
-                          blinkeyPopUp(context),
-                        ],
+                    Padding(padding: EdgeInsets.only(left: 15),
+                    child: Row(
+                      children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(5),
+                          child: Opacity(opacity: 0.85,
+                          child: SvgPicture.asset('assets/icons/user_avatar.svg', 
+                          fit: BoxFit.cover))
+                        )
                       ),
+                      Spacer(),
+                      blinkeyPopUp(context)
+                    ],)
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25,),
+                      child: Opacity(opacity: 1,
+                      child: Text('Welcome, ${userData['first_name']}', style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                      ))
                     ),
                   ],
                 );
@@ -473,7 +469,7 @@ class _HomePageState extends State<HomePage> {
               )
           ],
         ),
-      );
+    );
   }
 
 Widget ticketObject(String title, BuildContext context, String ticket_id, String description, String status) {
@@ -718,37 +714,6 @@ Widget ticketObject(String title, BuildContext context, String ticket_id, String
   );
 }
 
-void _showLogoutDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        title: Text("Log Out"),
-        content: Text("Are you sure you want to log out?"),
-        actions: [
-          TextButton(
-            child: Text("Cancel"),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
-            },
-          ),
-          TextButton(
-            child: Text("Log Out", style: TextStyle(color: Colors.red)),
-            onPressed: () {
-              Navigator.of(dialogContext).pop(); // Close dialog
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LogIn()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
   Padding blinkeyPopUp(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     
@@ -756,7 +721,7 @@ void _showLogoutDialog(BuildContext context) {
       padding: const EdgeInsets.only(right: 20),
       child: PopupMenuButton<int>(
         surfaceTintColor: Colors.white,
-        icon: SvgPicture.asset('assets/icons/hamburger_menu.svg', height: 25, width: 25),
+        icon: SvgPicture.asset('assets/icons/dots.svg', height: 30, width: 30),
         color: Colors.grey[100],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -775,10 +740,7 @@ void _showLogoutDialog(BuildContext context) {
           if (value == 3){
             Navigator.of(context).push(
               MaterialPageRoute(
-              builder: (context) => InstitutionPage()));
-          }
-          if (value == 4){
-            _showLogoutDialog(context);
+              builder: (context) => LogIn()));
           }
         },
         itemBuilder: (context) => [
@@ -799,13 +761,6 @@ void _showLogoutDialog(BuildContext context) {
           PopupMenuItem(
             value: 3,
             child: ListTile(
-              leading: SvgPicture.asset('assets/icons/connect.svg', height: 24, width: 24),
-              title: Text('Connect Institution'),
-            ),
-          ),
-          PopupMenuItem(
-            value: 4,
-            child: ListTile(
               leading: SvgPicture.asset('assets/icons/logout.svg', height: 24, width: 24),
               title: Text('Log out'),
               textColor: Colors.red,
@@ -815,72 +770,4 @@ void _showLogoutDialog(BuildContext context) {
       ),
     );
   }
-
-
-  AppBar appBar(BuildContext context) {
-    return AppBar(
-        title: Text('Welcome User'),
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        actions: [
-        PopupMenuButton<int>(
-        onSelected: (value){
-        //  if (value == 1){
-            //Navigator.of(context).push(
-              //MaterialPageRoute(
-              //builder: (context) => const AddTicket()),
-          //  );
-          //}
-          if (value == 1){
-            Navigator.of(context).push(
-              MaterialPageRoute(
-              //builder: (context) => const Settings()),
-              builder: (context) =>  SettingsPage(uid: widget.uid)),
-            );
-          }
-          // if (value == 2){
-          //   Navigator.of(context).push(
-          //     MaterialPageRoute(
-          //     builder: (context) => const FaceSetup(uid: widget.uid)),
-          //   );
-          // }
-          if (value == 3){
-              Navigator.of(context).push(
-              MaterialPageRoute(
-              builder: (context) => LogIn()),
-            );
-          }
-        },
-        itemBuilder: (context)=>[
-        //  PopupMenuItem(
-        //    value: 1,
-        //    child: ListTile(
-        //      leading: SvgPicture.asset('assets/icons/add.svg', height: 24, width: 24),
-        //      title: Text('Add Ticket/Pass'),
-        //    ),
-        //  ),
-          PopupMenuItem(
-            value: 1,
-            child: ListTile(
-              leading: SvgPicture.asset('assets/icons/settings.svg', height: 24, width: 24),
-              title: Text('Settings'),
-            ),
-          ),
-          PopupMenuItem(
-            value: 3,
-            child: ListTile(
-              leading: SvgPicture.asset('assets/icons/logout.svg', height:24, width: 24) ,
-              title: Text('Log out'),
-              textColor: Colors.red,
-            ),
-          ),
-              
-        ],
-        ),
-    ],
-        
-      );
-  }
-
-
 }
